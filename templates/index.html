@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Omat treenit</h1>
+<a href="{{ url_for('add_workout') }}">Lisää uusi treeni</a> | 
+<a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+<ul>
+    {% for w in workouts %}
+    <li>{{ w.date }} - {{ w.type }} ({{ w.duration }} min) - {{ w.description }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

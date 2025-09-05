@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Lisää treeni</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <p>{{ form.date.label }} {{ form.date() }}</p>
+    <p>{{ form.type.label }} {{ form.type() }}</p>
+    <p>{{ form.duration.label }} {{ form.duration() }}</p>
+    <p>{{ form.description.label }} {{ form.description() }}</p>
+    <p>{{ form.submit() }}</p>
+</form>
+<a href="{{ url_for('index') }}">Takaisin</a>
+{% endblock %}
