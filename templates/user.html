@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Käyttäjä {{ user.username }}</h1>
+
+<p>
+    Käyttäjä on lisännyt {{ workouts|length }} treeniä
+</p>
+
+{% if workouts %}
+    <ul>
+    {% for workout in workouts %}
+        <li>
+            <strong>{{ workout.date }}:</strong> {{ workout.type }} – {{ workout.duration }} min<br>
+            {{ workout.description }}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Käyttäjä ei ole vielä lisännyt treenejä.</p>
+{% endif %}
+
+<p><a href="{{ url_for('index') }}">Takaisin treeniluetteloon</a> |
+<a href="{{ url_for('logout') }}">Kirjaudu ulos</a></p>
+{% endblock %}
+

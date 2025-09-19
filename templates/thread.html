@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ thread.title }}{% endblock %}
+{% block content %}
+<h2>{{ thread.title }}</h2>
+
+{% for message in thread.messages %}
+<p>{{ message.user.username }}: {{ message.content }} <small>{{ message.sent_at }}</small></p>
+<hr>
+{% endfor %}
+
+<h3>Lisää viesti</h3>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <p>{{ form.content.label }} {{ form.content() }}</p>
+    <p>{{ form.submit() }}</p>
+</form>
+<a href="{{ url_for('forum') }}">Takaisin foorumiin</a>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Hae treenejä</h1>
+
+<p><a href="{{ url_for('index') }}">Takaisin treeniluetteloon</a> | <a href="{{ url_for('logout') }}">Kirjaudu ulos</a></p>
+
+<form method="get" action="{{ url_for('search') }}">
+    <p>
+        Hakusana:
+        <input type="text" name="query" value="{{ query or '' }}">
+    </p>
+    <input type="submit" value="Hae">
+</form>
+
+{% if query %}
+    <hr>
+    <h2>Hakutulokset haulla "{{ query }}"</h2>
+    {% if results %}
+        <ul>
+        {% for w in results %}
+            <li>
+                <strong>{{ w.date }}:</strong> {{ w.type }} – {{ w.duration }} min<br>
+                {{ w.description }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Ei tuloksia haulle "{{ query }}".</p>
+    {% endif %}
+{% endif %}
+{% endblock %}
+
