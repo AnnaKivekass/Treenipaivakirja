@@ -19,13 +19,14 @@
 <h2>Kaikki viestit</h2>
 <ul>
     {% for message in messages %}
-        <li>
-            <strong>{{ message.user.username }}:</strong> {{ message.content }}
-            {% if message.user_id == current_user.id %}
-                | <a href="{{ url_for('edit_message', message_id=message.id) }}">Muokkaa</a>
-                | <a href="{{ url_for('delete_message', message_id=message.id) }}">Poista</a>
-            {% endif %}
-        </li>
+    <li>
+        <strong>{{ message.user.username }}:</strong> {{ message.content }}
+        {% if message.user_id == current_user.id %}
+            | <a href="{{ url_for('edit_message', message_id=message.id) }}">Muokkaa</a>
+            | <a href="{{ url_for('delete_message', message_id=message.id) }}"
+                 onclick="return confirm('Haluatko varmasti poistaa tämän viestin?');">Poista</a>
+        {% endif %}
+    </li>
     {% endfor %}
 </ul>
 {% endblock %}
