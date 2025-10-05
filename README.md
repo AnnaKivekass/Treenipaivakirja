@@ -1,7 +1,21 @@
-Treenipäiväkirja Käyttäjä voi luoda tunnuksen ja kirjautua sisään - Rekistöryityminen ja kirjautumissivu. 
-Käyttäjä voi lisätä sovellukseen treenikertoja eli tietokohteita (päivämääriä, treenityyppejä, kestoja ja kuvauksia.
-Käyttäjä voi myös muokata tai poistaa treenejä. Käyttäjä näkee sovellukseen lisätyt treenit. 
-Käyttäjä pystyy etsimään treenejä hakusanoilla, esimerkiksi "juoksu" tai "jooga". 
-Käyttäjäsivu näyttää montako treeniä käyttäjä on lisännyt ja listan käyttäjän treeneistä.
-Käyttäjä pystyy valitsemaan harjoitukselleen yhden tai useamman luokittelun (esim. juoksu, kuntosali, uinti, jooga).
-Käyttäjä voi kommentoida harjoituksia ja antaa niille arvosanan. Treeneistä näytetään kommentit ja keskimääräinen arvosana.
+Sovelluksessa on seuraavat ominaisuudet
+- Käyttäjätilit:
+  - Käyttäjä voi rekisteröityä ja kirjautua sisään.
+  - Jokaisella käyttäjällä on oma näkymä, jossa näkyvät hänen lisäämänsä treenit.
+
+- Treenien hallinta:
+  - Käyttäjä voi lisätä uuden treenin, joka sisältää päivämäärän, tyypin, keston ja kuvauksen.
+  - Kaikki käyttäjän treenit näkyvät etusivulla.
+  - Treenejä voi myös hakea hakutoiminnolla.
+
+- Luokittelu:
+  - Treenille voi valita yhden tai useamman luokan (esim. voima, cardio, venyttely).
+  - Luokat tallennetaan tietokantaan ja niitä voidaan hyödyntää tilastoissa ja hauissa.
+
+- Viestit:
+  - Käyttäjät voivat lähettää viestejä toisten käyttäjien treeneihin liittyen.
+  - Viestit tallennetaan tietokantaan ja näkyvät viestisivulla.
+
+- Tilastot ja käyttäjäsivu:
+  - Käyttäjäsivulla näkyy yhteenveto käyttäjän lisäämistä treeneistä ja mahdolliset tilastot.
+
