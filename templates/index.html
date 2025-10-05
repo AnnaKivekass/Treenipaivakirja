@@ -6,7 +6,7 @@
   <p>
     <a href="{{ url_for('add_workout') }}">Lisää uusi treeni</a> |
     <a href="{{ url_for('search') }}">Hae treenejä</a> |
-    <a href="{{ url_for('messages') }}">Viestit</a> |
+    <a href="{{ url_for('messages_route') }}">Viestit</a> |
     <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
   </p>
 
@@ -23,4 +23,3 @@
     <p>Ei vielä treenejä.</p>
   {% endif %}
 {% endblock %}
-

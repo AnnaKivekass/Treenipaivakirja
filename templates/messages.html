@@ -3,31 +3,43 @@
 {% block content %}
 <h1>Viestit</h1>
 
-<a href="{{ url_for('index') }}">Takaisin treeniluetteloon</a> |
-<a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+<p>
+  <a href="{{ url_for('index') }}">Takaisin treeniluetteloon</a> |
+  <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+</p>
 
 <h2>Lähetä uusi viesti</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <p>
-        {{ form.content.label }}<br>
-        {{ form.content(rows=4, cols=50) }}
-    </p>
-    <p>{{ form.submit() }}</p>
+<form method="post">
+  <p>
+    <label for="content">Sisältö:</label><br>
+    <textarea name="content" id="content" rows="4" cols="50" required></textarea>
+  </p>
+  <p>
+    <label for="workout_id">Liitä treeniin:</label><br>
+    <select name="workout_id" id="workout_id" required>
+      <option value="" disabled selected>Valitse treeni</option>
+      {% for w in workouts %}
+        <option value="{{ w.id }}">{{ w.date }} – {{ w.type }}</option>
+      {% endfor %}
+    </select>
+  </p>
+  <p><button type="submit">Lähetä</button></p>
 </form>
 
 <h2>Kaikki viestit</h2>
 <ul>
-    {% for message in messages %}
+  {% for message in messages %}
     <li>
-        <strong>{{ message.user.username }}:</strong> {{ message.content }}
-        {% if message.user_id == current_user.id %}
-            | <a href="{{ url_for('edit_message', message_id=message.id) }}">Muokkaa</a>
-            | <a href="{{ url_for('delete_message', message_id=message.id) }}"
-                 onclick="return confirm('Haluatko varmasti poistaa tämän viestin?');">Poista</a>
-        {% endif %}
+      <strong>{{ message.sender }}</strong>
+      ({{ message.workout_date }} – {{ message.workout_type }}):
+      {{ message.content }}
+      <a href="{{ url_for('edit_message', message_id=message.id) }}">Muokkaa</a> |
+      <a href="{{ url_for('delete_message', message_id=message.id) }}"
+         onclick="return confirm('Haluatko varmasti poistaa tämän viestin?');">Poista</a>
     </li>
-    {% endfor %}
+  {% else %}
+    <li>Ei viestejä.</li>
+  {% endfor %}
 </ul>
 {% endblock %}
 
