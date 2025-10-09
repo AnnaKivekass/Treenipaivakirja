@@ -10,6 +10,7 @@
 
 <h2>Lähetä uusi viesti</h2>
 <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <p>
     <label for="content">Sisältö:</label><br>
     <textarea name="content" id="content" rows="4" cols="50" required></textarea>

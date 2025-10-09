@@ -1,4 +1,5 @@
 import sqlite3
+import hashlib
 from flask import g, current_app
 from pathlib import Path
 
@@ -26,34 +27,81 @@ def init_db(schema_path: str = "schema.sql"):
         db.executescript(f.read())
     db.commit()
 
+def _hash(p: str) -> str:
+    return hashlib.sha256(p.encode("utf-8")).hexdigest()
+
+def verify_password(user_row, password: str) -> bool:
+    return bool(user_row and user_row["password_hash"] == _hash(password))
+
 def add_user(username: str, password: str):
     db = get_db()
     db.execute(
         "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-        (username, password),
+        (username, _hash(password)),
     )
     db.commit()
 
 def get_user(username: str):
     db = get_db()
     return db.execute(
-        "SELECT id, username, password_hash AS password FROM users WHERE username = ?",
+        "SELECT id, username, password_hash FROM users WHERE username = ?",
         (username,),
+    ).fetchone()
+
+def get_user_by_id(user_id: int):
+    db = get_db()
+    return db.execute(
+        "SELECT id, username FROM users WHERE id = ?",
+        (user_id,),
     ).fetchone()
 
 def add_workout(user_id: int, date: str, wtype: str, duration: int, description: str | None):
     db = get_db()
-    db.execute(
+    cur = db.execute(
         "INSERT INTO workouts (user_id, date, type, duration, description) VALUES (?, ?, ?, ?, ?)",
         (user_id, date, wtype, duration, description),
     )
     db.commit()
+    return cur.lastrowid
 
 def list_workouts(user_id: int):
     db = get_db()
     return db.execute(
         "SELECT id, date, type, duration, description FROM workouts WHERE user_id = ? ORDER BY date DESC, id DESC",
         (user_id,),
+    ).fetchall()
+
+def get_workout(workout_id: int):
+    db = get_db()
+    return db.execute(
+        "SELECT id, user_id, date, type, duration, description FROM workouts WHERE id = ?",
+        (workout_id,),
+    ).fetchone()
+
+def list_categories():
+    db = get_db()
+    return db.execute(
+        "SELECT id, name FROM categories ORDER BY name",
+    ).fetchall()
+
+def assign_categories_to_workout(workout_id: int, category_ids: list[int]):
+    db = get_db()
+    for cid in category_ids:
+        db.execute(
+            "INSERT OR IGNORE INTO workout_categories (workout_id, category_id) VALUES (?, ?)",
+            (workout_id, cid),
+        )
+    db.commit()
+
+def list_workout_categories(workout_id: int):
+    db = get_db()
+    return db.execute(
+        """SELECT c.id, c.name
+           FROM categories c
+           JOIN workout_categories wc ON wc.category_id = c.id
+           WHERE wc.workout_id = ?
+           ORDER BY c.name""",
+        (workout_id,),
     ).fetchall()
 
 def add_message(sender_id: int, receiver_id: int, workout_id: int, content: str):
@@ -64,16 +112,41 @@ def add_message(sender_id: int, receiver_id: int, workout_id: int, content: str)
     )
     db.commit()
 
-
 def list_messages(receiver_id: int):
+    """Kaikki viestit, joissa käyttäjä on vastaanottaja (vanha yhteensopivuus)."""
     db = get_db()
     return db.execute(
         """SELECT m.id, m.content, m.created_at,
-                  s.username AS sender, w.id AS workout_id, w.type AS workout_type, w.date AS workout_date
+                  s.username AS sender,
+                  w.id   AS workout_id,
+                  w.type AS workout_type,
+                  w.date AS workout_date
            FROM messages m
-           JOIN users s ON s.id = m.sender_id
+           JOIN users s   ON s.id = m.sender_id
            JOIN workouts w ON w.id = m.workout_id
            WHERE m.receiver_id = ?
            ORDER BY m.created_at DESC, m.id DESC""",
         (receiver_id,),
     ).fetchall()
+
+def list_inbox_for_user(user_id: int, limit: int = 50):
+    """Saapuneet viestit käyttäjälle (käytännössä sama kuin list_messages rajauksella)."""
+    db = get_db()
+    return db.execute(
+        """SELECT m.id, m.content, m.created_at,
+                  s.username AS sender,
+                  w.id   AS workout_id,
+                  w.type AS workout_type,
+                  w.date AS workout_date
+           FROM messages m
+           JOIN users s    ON s.id = m.sender_id
+           JOIN workouts w ON w.id = m.workout_id
+           WHERE m.receiver_id = ?
+           ORDER BY m.created_at DESC, m.id DESC
+           LIMIT ?""",
+        (user_id, limit),
+    ).fetchall()
+
+def send_message_about_workout(workout_id: int, sender_id: int, receiver_id: int, content: str):
+    add_message(sender_id=sender_id, receiver_id=receiver_id, workout_id=workout_id, content=content)
+

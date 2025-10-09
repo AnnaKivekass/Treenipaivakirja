@@ -47,5 +47,11 @@ CREATE TABLE messages (
   FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-INSERT INTO categories (name) VALUES ('Running'), ('Gym'), ('Cycling'), ('Swimming');
+INSERT INTO categories (name) VALUES
+  ('Juoksu'),
+  ('Pyöräily'),
+  ('Uinti'),
+  ('Kuntosali'),
+  ('Jooga'),
+  ('Kävely');
 

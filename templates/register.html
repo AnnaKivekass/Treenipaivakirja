@@ -4,15 +4,22 @@
 <h2>Rekisteröidy</h2>
 
 <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <p>
     <label for="username">Käyttäjätunnus:</label><br>
-    <input type="text" id="username" name="username" required>
+    <input type="text" name="username" id="username" required>
   </p>
   <p>
     <label for="password">Salasana:</label><br>
-    <input type="password" id="password" name="password" required>
+    <input type="password" name="password" id="password" required>
   </p>
-  <p><button type="submit">Luo tili</button></p>
+  <p>
+    <label for="password2">Salasana uudelleen:</label><br>
+    <input type="password" name="password2" id="password2" required>
+  </p>
+  <p>
+    <button type="submit">Luo käyttäjä</button>
+  </p>
 </form>
 
 <p><a href="{{ url_for('login') }}">Palaa kirjautumiseen</a></p>

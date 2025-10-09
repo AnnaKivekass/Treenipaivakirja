@@ -1,25 +1,37 @@
 {% extends "base.html" %}
+{% block title %}Omat treenit{% endblock %}
 
 {% block content %}
-  <h1>Omat treenit</h1>
+<h1>Omat treenit</h1>
 
-  <p>
-    <a href="{{ url_for('add_workout') }}">Lisää uusi treeni</a> |
-    <a href="{{ url_for('search') }}">Hae treenejä</a> |
-    <a href="{{ url_for('messages_route') }}">Viestit</a> |
-    <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
-  </p>
+<p>
+  <a href="{{ url_for('add_workout') }}">Lisää uusi treeni</a> |
+  <a href="{{ url_for('search') }}">Hae treenejä</a> |
+  <a href="{{ url_for('messages_route') }}">Viestit</a> |
+  <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+</p>
 
-  {% if workouts %}
-    <ul>
-      {% for workout in workouts %}
-        <li>
-          <strong>{{ workout.date }}:</strong> {{ workout.type }} – {{ workout.duration }} min<br>
-          {{ workout.description }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>Ei vielä treenejä.</p>
-  {% endif %}
+{% if workouts %}
+  <ul>
+    {% for w in workouts %}
+      <li class="thread">
+        <p><strong>{{ w.date }}:</strong> {{ w.type }} – {{ w.duration }} min</p>
+
+        {% if w.categories and w.categories|length %}
+          <p>
+            {% for c in w.categories %}
+              <span class="badge {{ c.name|lower }}">{{ c.name }}</span>
+            {% endfor %}
+          </p>
+        {% endif %}
+
+        {% if w.description %}
+          <p>{{ w.description }}</p>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Ei vielä treenejä.</p>
+{% endif %}
 {% endblock %}

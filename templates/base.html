@@ -1,51 +1,46 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-    <meta charset="UTF-8">
-    <title>Treenipäiväkirja</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-        }
-        header {
-            margin-bottom: 20px;
-        }
-        a {
-            text-decoration: none;
-            color: #007BFF;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        form {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0px 0px 5px rgba(0,0,0,0.1);
-        }
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        li {
-            background-color: #fff;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0px 0px 3px rgba(0,0,0,0.1);
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>{% block title %}Treenipäiväkirja{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-    <header>
-        <h1>Treenipäiväkirja</h1>
-        <hr>
-    </header>
 
-    {% block content %}
-    {% endblock %}
+  <div class="header">
+    <h1>Treenipäiväkirja</h1>
+  </div>
+
+  <div class="nav">
+    <nav>
+      <ul>
+        <li><a href="{{ url_for('index') }}">Etusivu</a></li>
+        <li><a href="{{ url_for('search') }}">Haku</a></li>
+        <li><a href="{{ url_for('register') }}">Luo tunnus</a></li>
+        {% if session.get('user_id') %}
+          <li><a href="{{ url_for('add_workout') }}">Lisää treeni</a></li>
+          <li><a href="{{ url_for('messages_route') }}">Viestit</a></li>
+          <li><a href="{{ url_for('logout') }}">Kirjaudu ulos</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Kirjaudu sisään</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <p class="info">{{ message }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
 </body>
 </html>
 

@@ -1,0 +1,126 @@
+body {
+  background-color: #c8e4ee;
+  color: #111;
+  font-family: sans-serif;
+  margin: auto;
+  max-width: 50em;
+}
+
+.header {
+  background: #111;
+  color: #ff5a5f;
+  padding: 1em;
+  margin: 0.5em 0;
+}
+
+.nav {
+  background: #e6eef2;
+  border: 1px solid #d7e5ec;
+  border-radius: 8px;
+  padding: 0.5em;
+  margin: 0.5em 0;
+  text-align: center;
+}
+
+nav ul {
+  padding: 0;
+  margin: 0;
+}
+
+nav li {
+  display: inline-block;
+  padding: 0 1em;
+  margin: 0;
+}
+
+nav li:not(:last-of-type) {
+  border-right: 1px solid #aaa;
+}
+
+nav a, nav a:visited {
+  color: #1f2937;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+.content {
+  background: #fff;
+  border: 1px solid #e6eef2;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.05);
+  padding: 1em;
+  margin: 0.5em 0;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="date"],
+input[type="number"],
+select, textarea {
+  width: min(560px, 100%);
+  background: #f7fbfd;
+  border: 1px solid #cfe0e7;
+  border-radius: 8px;
+  padding: 9px 10px;
+  color: #111;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #8ecae6;
+  box-shadow: 0 0 0 3px rgba(142,202,230,.35);
+  background: #ffffff;
+}
+
+label.inline {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin:6px 12px 6px 0;
+}
+
+button, .btn {
+  background: linear-gradient(#f8fafc, #eef4f8);
+  border: 1px solid #cfe0e7;
+  color: #111;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+button:hover, .btn:hover {
+  background: linear-gradient(#eef6fb, #e8f2f8);
+  border-color: #8ecae6;
+}
+
+.info {
+  background: #e3f2fd;
+  color: #111;
+  border: 1px solid #cfe0e7;
+  padding: 0.5em;
+  margin: 1em 0;
+}
+
+.badge {
+  display: inline-block;
+  border: 1px solid #bfcad1;
+  padding: .25em .8em;
+  margin: 0 .25em .25em 0;
+  border-radius: .6em;
+  color: #000;
+  font-weight: 600;
+  font-size: .9em;
+}
+
+.badge.juoksu    { background: #ffe5b4; }
+.badge.pyöräily  { background: #cce5ff; }
+.badge.uinti     { background: #b3f0ff; }
+.badge.kuntosali { background: #d6f5d6; }
+.badge.jooga     { background: #f9d5ec; }
+.badge.kävely    { background: #ede7f6; }
+
+a, a:visited { color: #1f2937; }
+a:hover { color: #0f172a; }

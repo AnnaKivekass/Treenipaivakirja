@@ -4,21 +4,33 @@
 <h2>Lisää uusi treeni</h2>
 
 <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
   <p>
     <label for="date">Päivämäärä:</label><br>
-    <input type="date" id="date" name="date" value="{{ form.date }}">
+    <input type="date" id="date" name="date" value="{{ form.date }}" required>
   </p>
   <p>
     <label for="type">Treenin tyyppi:</label><br>
-    <input type="text" id="type" name="type" value="{{ form.type }}">
+    <input type="text" id="type" name="type" value="{{ form.type }}" required>
   </p>
   <p>
     <label for="duration">Kesto (min):</label><br>
-    <input type="number" id="duration" name="duration" value="{{ form.duration }}">
+    <input type="number" id="duration" name="duration" value="{{ form.duration }}" required>
   </p>
   <p>
     <label for="description">Kuvaus:</label><br>
     <textarea id="description" name="description" rows="3" cols="40">{{ form.description }}</textarea>
+  </p>
+
+  <p><strong>Luokat:</strong><br>
+    {% for c in categories %}
+      <label style="margin-right:12px; display:inline-block; margin-bottom:6px;">
+        <input type="checkbox" name="categories" value="{{ c.id }}"
+               {% if c.id in selected %}checked{% endif %}>
+        {{ c.name }}
+      </label>
+    {% endfor %}
   </p>
 
   <p><button type="submit">Tallenna treeni</button></p>
