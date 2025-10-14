@@ -31,7 +31,9 @@ def _hash(p: str) -> str:
     return hashlib.sha256(p.encode("utf-8")).hexdigest()
 
 def verify_password(user_row, password: str) -> bool:
-    return bool(user_row and user_row["password_hash"] == _hash(password))
+    if not user_row:
+        return False
+    return user_row["password_hash"] == _hash_password(password)
 
 def add_user(username: str, password: str):
     db = get_db()
@@ -107,37 +109,40 @@ def list_workout_categories(workout_id: int):
 def add_message(sender_id: int, receiver_id: int, workout_id: int, content: str):
     db = get_db()
     db.execute(
-        "INSERT INTO messages (sender_id, receiver_id, workout_id, content) VALUES (?, ?, ?, ?)",
-        (sender_id, receiver_id, workout_id, content),
+        "INSERT INTO messages (workout_id, sender_id, receiver_id, content) VALUES (?, ?, ?, ?)",
+        (workout_id, sender_id, receiver_id, content),
     )
     db.commit()
 
 def list_messages(receiver_id: int):
-    """Kaikki viestit, joissa käyttäjä on vastaanottaja (vanha yhteensopivuus)."""
     db = get_db()
     return db.execute(
-        """SELECT m.id, m.content, m.created_at,
-                  s.username AS sender,
-                  w.id   AS workout_id,
-                  w.type AS workout_type,
-                  w.date AS workout_date
+        """SELECT m.id,
+                  m.sender_id,
+                  m.receiver_id,
+                  m.content,
+                  m.created_at,
+                  s.username,
+                  w.id,
+                  w.type,
+                  w.date
            FROM messages m
-           JOIN users s   ON s.id = m.sender_id
+           JOIN users s    ON s.id = m.sender_id
            JOIN workouts w ON w.id = m.workout_id
            WHERE m.receiver_id = ?
            ORDER BY m.created_at DESC, m.id DESC""",
         (receiver_id,),
     ).fetchall()
 
+
 def list_inbox_for_user(user_id: int, limit: int = 50):
-    """Saapuneet viestit käyttäjälle (käytännössä sama kuin list_messages rajauksella)."""
     db = get_db()
     return db.execute(
         """SELECT m.id, m.content, m.created_at,
-                  s.username AS sender,
-                  w.id   AS workout_id,
-                  w.type AS workout_type,
-                  w.date AS workout_date
+                  s.username,
+                  w.id,
+                  w.type,
+                  w.date
            FROM messages m
            JOIN users s    ON s.id = m.sender_id
            JOIN workouts w ON w.id = m.workout_id

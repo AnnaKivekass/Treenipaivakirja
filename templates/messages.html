@@ -1,10 +1,9 @@
 {% extends "base.html" %}
-
 {% block content %}
 <h1>Viestit</h1>
 
 <p>
-  <a href="{{ url_for('index') }}">Takaisin treeniluetteloon</a> |
+  <a href="{{ url_for('index') }}">Etusivu</a> |
   <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
 </p>
 
@@ -20,7 +19,7 @@
     <select name="workout_id" id="workout_id" required>
       <option value="" disabled selected>Valitse treeni</option>
       {% for w in workouts %}
-        <option value="{{ w.id }}">{{ w.date }} – {{ w.type }}</option>
+        <option value="{{ w.id }}">{{ w.date }} – {{ w.type }} ({{ w.username }})</option>
       {% endfor %}
     </select>
   </p>
@@ -29,18 +28,21 @@
 
 <h2>Kaikki viestit</h2>
 <ul>
-  {% for message in messages %}
-    <li>
-      <strong>{{ message.sender }}</strong>
-      ({{ message.workout_date }} – {{ message.workout_type }}):
-      {{ message.content }}
-      <a href="{{ url_for('edit_message', message_id=message.id) }}">Muokkaa</a> |
-      <a href="{{ url_for('delete_message', message_id=message.id) }}"
-         onclick="return confirm('Haluatko varmasti poistaa tämän viestin?');">Poista</a>
+  {% for m in messages %}
+    <li class="thread">
+      <div><strong>{{ m.sender }}</strong> → <em>{{ m.receiver }}</em></div>
+      <div>Treeni: {{ m.workout_date }} – {{ m.workout_type }}</div>
+      <div>{{ m.content }}</div>
+      {% if session.user_id and session.username and m.sender == session.username %}
+        <form action="{{ url_for('delete_message', message_id=m.id) }}" method="post" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" onclick="return confirm('Poistetaanko viesti?')">Poista</button>
+        </form>
+        <a href="{{ url_for('edit_message', message_id=m.id) }}">Muokkaa</a>
+      {% endif %}
     </li>
   {% else %}
     <li>Ei viestejä.</li>
   {% endfor %}
 </ul>
 {% endblock %}
-

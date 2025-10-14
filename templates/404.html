@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Sivua ei löydy{% endblock %}
+{% block content %}
+<h2>Sivua ei löydy (404)</h2>
+<p>Hakemaasi sivua ei löytynyt.</p>
+<p><a href="{{ url_for('index') }}">Etusivulle</a></p>
+{% endblock %}

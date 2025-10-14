@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Kaikki treenit</h1>
+<p><a href="{{ url_for('index') }}">Omat treenit</a> | <a href="{{ url_for('logout') }}">Kirjaudu ulos</a></p>
+
+{% if workouts %}
+  <ul>
+    {% for w in workouts %}
+      <li class="thread">
+        <strong>{{ w.date }}</strong> — {{ w.type }} ({{ w.duration }} min) — <em>{{ w.username }}</em><br>
+        {{ w.description }}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Ei treenejä.</p>
+{% endif %}
+{% endblock %}
