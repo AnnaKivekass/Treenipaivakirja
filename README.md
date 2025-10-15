@@ -1,21 +1,20 @@
-Sovelluksessa on seuraavat ominaisuudet
-- Käyttäjätilit:
-  - Käyttäjä voi rekisteröityä ja kirjautua sisään.
-  - Jokaisella käyttäjällä on oma näkymä, jossa näkyvät hänen lisäämänsä treenit.
+The application has the following features:
+User Accounts:
+-Users can register and log in.
+-Each user has their own view displaying the workouts they have added.
 
-- Treenien hallinta:
-  - Käyttäjä voi lisätä uuden treenin, joka sisältää päivämäärän, tyypin, keston ja kuvauksen.
-  - Kaikki käyttäjän treenit näkyvät etusivulla.
-  - Treenejä voi myös hakea hakutoiminnolla.
+Workout Management:
+-Users can add a new workout that includes the date, type, duration, and description.
+-All of a user’s workouts are shown on the homepage.
+-Workouts can also be searched using a search function.
 
-- Luokittelu:
-  - Treenille voi valita yhden tai useamman luokan (esim. voima, cardio, venyttely).
-  - Luokat tallennetaan tietokantaan ja niitä voidaan hyödyntää tilastoissa ja hauissa.
+Categorization:
+-A workout can be assigned one or more categories (running, cycling, swimming, strength, yoga).
+-Categories are stored in the database and can be used in statistics and searches.
 
-- Viestit:
-  - Käyttäjät voivat lähettää viestejä toisten käyttäjien treeneihin liittyen.
-  - Viestit tallennetaan tietokantaan ja näkyvät viestisivulla.
+Messages:
+-Users can send messages related to other users’ workouts.
+-Messages are stored in the database and displayed on the messages page.
 
-- Tilastot ja käyttäjäsivu:
-  - Käyttäjäsivulla näkyy yhteenveto käyttäjän lisäämistä treeneistä ja mahdolliset tilastot.
-
+Statistics and User Page:
+-The user page displays a summary of the workouts added by the user and possible statistics.
