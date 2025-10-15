@@ -53,5 +53,6 @@ INSERT INTO categories (name) VALUES
   ('Uinti'),
   ('Kuntosali'),
   ('Jooga'),
-  ('Kävely');
+  ('Kävely'),
+  ('Muu');
 
