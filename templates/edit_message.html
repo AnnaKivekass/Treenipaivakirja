@@ -1,17 +1,23 @@
 {% extends "base.html" %}
-
 {% block content %}
 <h1>Muokkaa viestiä</h1>
 
-<a href="{{ url_for('messages') }}">Takaisin viesteihin</a> |
+<a href="{{ url_for('messages_route') }}">Takaisin viesteihin</a> |
 <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
 
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <p>
-        {{ form.content.label }}<br>
-        {{ form.content(rows=4, cols=50) }}
-    </p>
-    <p>{{ form.submit(label='Tallenna muutokset') }}</p>
+<form method="post" action="{{ url_for('edit_message', message_id=message['id']) }}">
+  <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+  <p>
+    <label for="content">Sisältö</label><br>
+    <textarea id="content"
+              name="content"
+              rows="6"
+              cols="50"
+              maxlength="1000"
+              required>{{ content_override if content_override is defined else message['content'] }}</textarea>
+  </p>
+  <p>
+    <button type="submit">Tallenna muutokset</button>
+  </p>
 </form>
 {% endblock %}
