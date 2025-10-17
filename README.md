@@ -21,7 +21,7 @@ Sovelluksessa on seuraavat ominaisuudet
 
 Sovelluksen asennus ja käyttöohjeet
 
-Jos Flask ei ole vielä asennettu, suorita komentorivillä:
+Jos Flask ei ole vielä asennettu, suorita terminaalissa komentorivillä:
 
 ```bash
 pip install flask
