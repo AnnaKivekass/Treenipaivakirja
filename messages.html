@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Viestit</h1>
+
+<p>
+  <a href="{{ url_for('index') }}">Etusivu</a> |
+  <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+</p>
+
+{# Flash-viestit, jos käytössä #}
+{% with msgs = get_flashed_messages(with_categories=true) %}
+  {% if msgs %}
+    <div class="flashes">
+      {% for category, m in msgs %}
+        <div class="flash {{ category }}">{{ m }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<h2>Lähetä uusi viesti</h2>
+<form method="post" action="">
+  <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+  <p>
+    <label for="content">Sisältö:</label><br>
+    <textarea name="content" id="content" rows="4" cols="50" maxlength="1000" required></textarea>
+  </p>
+  <p>
+    <label for="workout_id">Liitä treeniin:</label><br>
+    <select name="workout_id" id="workout_id" required>
+      <option value="" disabled selected>Valitse treeni</option>
+      {% for w in workouts %}
+        <option value="{{ w.id }}">{{ w.date }} – {{ w.type }} ({{ w.username }})</option>
+      {% endfor %}
+    </select>
+  </p>
+  <p><button type="submit">Lähetä</button></p>
+</form>
+
+<h2>Kaikki viestit</h2>
+<ul>
+  {% for m in messages %}
+    <li class="thread">
+      <div><strong>{{ m.sender }}</strong> → <em>{{ m.receiver }}</em></div>
+      <div>Treeni: {{ m.workout_date }} – {{ m.workout_type }}</div>
+
+      <div style="white-space: pre-wrap;">{{ m.content }}</div>
+
+      {% if session.user_id and session.username and m.sender == session.username %}
+        <form action="{{ url_for('delete_message', message_id=m.id) }}"
+              method="post" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ g.csrf_token }}">
+          <button type="submit" onclick="return confirm('Poistetaanko viesti?')">Poista</button>
+        </form>
+
+        <a href="{{ url_for('edit_message', message_id=m.id) }}">Muokkaa</a>
+      {% endif %}
+    </li>
+  {% else %}
+    <li>Ei viestejä.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

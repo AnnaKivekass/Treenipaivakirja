@@ -1,4 +1,3 @@
-
 from flask import (
     Flask, render_template, redirect, url_for,
     request, session, flash, abort, g,
@@ -269,7 +268,6 @@ def edit_message(message_id):
         "SELECT id, sender_id, content FROM messages WHERE id = ?",
         (message_id,)
     ).fetchone()
-
     if not msg:
         abort(404)
     if msg["sender_id"] != session["user_id"]:
@@ -278,7 +276,6 @@ def edit_message(message_id):
     if request.method == "POST":
         if request.form.get("csrf_token") != session.get("csrf_token"):
             abort(400)
-
         content = (request.form.get("content") or "").strip()
         if not content or len(content) > 1000:
             flash("Sisältö vaaditaan (max 1000 merkkiä).", "error")
@@ -286,23 +283,24 @@ def edit_message(message_id):
 
         db.execute("UPDATE messages SET content = ? WHERE id = ?", (content, message_id))
         db.commit()
-        flash("Viesti päivitetty onnistuneesti.", "success")
+        flash("Viesti päivitetty.", "success")
         return redirect(url_for("messages_route"))
 
     return render_template("edit_message.html", message=msg)
 
 
-@app.route("/delete_message/<int:message_id>")
+@app.route("/delete_message/<int:message_id>", methods=["POST"])
 def delete_message(message_id):
     if not require_login():
         return redirect(url_for("login"))
+    if request.form.get("csrf_token") != session.get("csrf_token"):
+        abort(400)
 
     db = get_db()
     msg = db.execute(
         "SELECT id, sender_id FROM messages WHERE id = ?",
         (message_id,)
     ).fetchone()
-
     if not msg:
         abort(404)
     if msg["sender_id"] != session["user_id"]:
@@ -312,6 +310,7 @@ def delete_message(message_id):
     db.commit()
     flash("Viesti poistettu.", "success")
     return redirect(url_for("messages_route"))
+
 
 @app.route("/search")
 def search():
