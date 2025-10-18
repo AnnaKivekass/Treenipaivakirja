@@ -3,6 +3,7 @@ import sqlite3
 from pathlib import Path
 from flask import g, current_app
 
+
 def get_db() -> sqlite3.Connection:
     if "db" not in g:
         db_path = current_app.config.get("DATABASE")
@@ -16,6 +17,7 @@ def get_db() -> sqlite3.Connection:
         conn.execute("PRAGMA foreign_keys = ON;")
         g.db = conn
     return g.db
+
 
 def close_db(e=None) -> None:
     db = g.pop("db", None)

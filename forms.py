@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import TextAreaField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length
 
+
 class EditMessageForm(FlaskForm):
     title = StringField("Otsikko", validators=[DataRequired(), Length(max=200)])
     content = TextAreaField("Sisältö", validators=[DataRequired(), Length(max=5000)])

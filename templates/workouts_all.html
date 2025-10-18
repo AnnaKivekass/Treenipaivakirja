@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Kaikki treenit</h1>
+
+{% with msgs = get_flashed_messages(with_categories=true) %}
+  {% if msgs %}
+    <div class="flashes">
+      {% for c, m in msgs %}
+        <div class="flash {{ c }}">{{ m }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% if workouts and workouts|length > 0 %}
+  <ul>
+    {% for w in workouts %}
+      <li style="margin-bottom:1rem;">
+        <strong>{{ w.get('date') }}</strong> – {{ w.get('type') }}
+        {% if w.get('duration') is not none %} ({{ w.get('duration') }} min){% endif %}
+        {% if w.get('username') %} · {{ w.get('username') }}{% endif %}
+        {% if w.get('description') %}
+          <div style="white-space: pre-wrap; margin-top:.25rem;">
+            {{ w.get('description') }}
+          </div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Ei treenejä.</p>
+{% endif %}
+{% endblock %}

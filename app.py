@@ -1,7 +1,14 @@
 from flask import (
-    Flask, render_template, redirect, url_for,
-    request, session, flash, abort, g,
-    get_flashed_messages
+    Flask,
+    render_template,
+    redirect,
+    url_for,
+    request,
+    session,
+    flash,
+    abort,
+    g,
+    get_flashed_messages,
 )
 from pathlib import Path
 import secrets
@@ -10,8 +17,17 @@ from functools import wraps
 from db.connection import get_db, close_db
 from db.users import add_user, get_user, get_user_by_id, verify_password
 from db.workouts import add_workout, list_workouts, get_workout
-from db.messages import add_message, list_messages, get_message_for_edit, update_message_content
-from db.categories import list_categories, assign_categories_to_workout, list_workout_categories
+from db.messages import (
+    add_message,
+    list_messages,
+    get_message_for_edit,
+    update_message_content,
+)
+from db.categories import (
+    list_categories,
+    assign_categories_to_workout,
+    list_workout_categories,
+)
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret"
@@ -20,30 +36,36 @@ Path("instance").mkdir(exist_ok=True)
 
 app.teardown_appcontext(close_db)
 
-@app.before_request
-def ensure_csrf():
-    if "csrf_token" not in session:
-        session["csrf_token"] = secrets.token_hex(16)
-    g.csrf_token = session["csrf_token"]
 
 @app.before_request
 def ensure_csrf():
     if "csrf_token" not in session:
         session["csrf_token"] = secrets.token_hex(16)
     g.csrf_token = session["csrf_token"]
+
+
+@app.before_request
+def ensure_csrf():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
+    g.csrf_token = session["csrf_token"]
+
 
 @app.context_processor
 def inject_csrf():
     return {"csrf_token": g.get("csrf_token")}
 
+
 @app.teardown_appcontext
 def _close_db(exc):
     close_db()
+
 
 @app.cli.command("init-db")
 def init_db_command():
     init_db("schema.sql")
     print("Initialized the database.")
+
 
 def require_login():
     if "user_id" not in session:
@@ -51,13 +73,17 @@ def require_login():
         return False
     return True
 
+
 @app.route("/")
 def index():
     if not require_login():
         return redirect(url_for("login"))
     workouts = list_workouts(session["user_id"])
-    workouts = [dict(w) | {"categories": list_workout_categories(w["id"])} for w in workouts]
+    workouts = [
+        dict(w) | {"categories": list_workout_categories(w["id"])} for w in workouts
+    ]
     return render_template("index.html", workouts=workouts)
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -88,6 +114,7 @@ def register():
 
     return render_template("register.html")
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -113,6 +140,7 @@ def logout():
     flash("Uloskirjautuminen onnistui.", "success")
     return redirect(url_for("login"))
 
+
 @app.route("/workout/add", methods=["GET", "POST"], endpoint="add_workout")
 def add_workout_route():
     if not require_login():
@@ -126,7 +154,9 @@ def add_workout_route():
         wtype = (request.form.get("type") or "").strip()
         duration_raw = (request.form.get("duration") or "").strip()
         description = (request.form.get("description") or "").strip()
-        selected_ids = [int(x) for x in request.form.getlist("categories") if x.isdigit()]
+        selected_ids = [
+            int(x) for x in request.form.getlist("categories") if x.isdigit()
+        ]
 
         errors = []
         if not date:
@@ -145,15 +175,25 @@ def add_workout_route():
             errors.append("Keston tulee olla kokonaisluku.")
 
         if errors:
-            for e in errors: flash(e, "error")
-            form = {"date": date, "type": wtype, "duration": duration_raw, "description": description}
-            return render_template("workout_form.html",
-                                   form=form,
-                                   categories=list_categories(),
-                                   selected=set(selected_ids))
+            for e in errors:
+                flash(e, "error")
+            form = {
+                "date": date,
+                "type": wtype,
+                "duration": duration_raw,
+                "description": description,
+            }
+            return render_template(
+                "workout_form.html",
+                form=form,
+                categories=list_categories(),
+                selected=set(selected_ids),
+            )
 
         try:
-            wid = add_workout(session["user_id"], date, wtype, duration_val, description or None)
+            wid = add_workout(
+                session["user_id"], date, wtype, duration_val, description or None
+            )
             assign_categories_to_workout(wid, selected_ids)
         except sqlite3.IntegrityError:
             abort(403)
@@ -161,10 +201,14 @@ def add_workout_route():
         flash("Treeni lisätty.", "success")
         return redirect(url_for("index"))
 
-    return render_template("workout_form.html",
-                           form={"date": "", "type": "", "duration": "", "description": ""},
-                           categories=list_categories(),
-                           selected=set())
+    return render_template(
+        "workout_form.html",
+        form={"date": "", "type": "", "duration": "", "description": ""},
+        categories=list_categories(),
+        selected=set(),
+    )
+
+
 @app.route("/workouts")
 def workouts_all():
     if not require_login():
@@ -176,8 +220,19 @@ def workouts_all():
            JOIN users u ON u.id = w.user_id
            ORDER BY w.date DESC, w.id DESC"""
     ).fetchall()
-    items = [{"id":r[0], "date":r[1], "type":r[2], "duration":r[3], "description":r[4], "username":r[5]} for r in rows]
+    items = [
+        {
+            "id": r[0],
+            "date": r[1],
+            "type": r[2],
+            "duration": r[3],
+            "description": r[4],
+            "username": r[5],
+        }
+        for r in rows
+    ]
     return render_template("workouts_all.html", workouts=items)
+
 
 @app.route("/messages", methods=["GET", "POST"], endpoint="messages_route")
 def messages_route():
@@ -208,7 +263,10 @@ def messages_route():
                    JOIN users u ON u.id = w.user_id
                    ORDER BY w.date DESC, w.id DESC"""
             ).fetchall()
-            workouts = [{"id":r[0], "date":r[1], "type":r[2], "username":r[3]} for r in wrows]
+            workouts = [
+                {"id": r[0], "date": r[1], "type": r[2], "username": r[3]}
+                for r in wrows
+            ]
 
             mrows = db.execute(
                 """SELECT m.id, m.content, m.created_at,
@@ -219,14 +277,28 @@ def messages_route():
                    JOIN workouts w ON w.id = m.workout_id
                    ORDER BY m.created_at DESC, m.id DESC"""
             ).fetchall()
-            messages = [{"id":x[0], "content":x[1], "created_at":x[2],
-                         "sender":x[3], "receiver":x[4],
-                         "workout_id":x[5], "workout_type":x[6], "workout_date":x[7]} for x in mrows]
+            messages = [
+                {
+                    "id": x[0],
+                    "content": x[1],
+                    "created_at": x[2],
+                    "sender": x[3],
+                    "receiver": x[4],
+                    "workout_id": x[5],
+                    "workout_type": x[6],
+                    "workout_date": x[7],
+                }
+                for x in mrows
+            ]
 
-            return render_template("messages.html", messages=messages, workouts=workouts)
+            return render_template(
+                "messages.html", messages=messages, workouts=workouts
+            )
 
         workout_id = int(workout_id_raw)
-        w = db.execute("SELECT id, user_id FROM workouts WHERE id = ?", (workout_id,)).fetchone()
+        w = db.execute(
+            "SELECT id, user_id FROM workouts WHERE id = ?", (workout_id,)
+        ).fetchone()
         if not w:
             abort(404)
 
@@ -246,7 +318,9 @@ def messages_route():
            JOIN users u ON u.id = w.user_id
            ORDER BY w.date DESC, w.id DESC"""
     ).fetchall()
-    workouts = [{"id":r[0], "date":r[1], "type":r[2], "username":r[3]} for r in wrows]
+    workouts = [
+        {"id": r[0], "date": r[1], "type": r[2], "username": r[3]} for r in wrows
+    ]
 
     mrows = db.execute(
         """SELECT m.id, m.content, m.created_at,
@@ -257,11 +331,22 @@ def messages_route():
            JOIN workouts w ON w.id = m.workout_id
            ORDER BY m.created_at DESC, m.id DESC"""
     ).fetchall()
-    messages = [{"id":x[0], "content":x[1], "created_at":x[2],
-                 "sender":x[3], "receiver":x[4],
-                 "workout_id":x[5], "workout_type":x[6], "workout_date":x[7]} for x in mrows]
+    messages = [
+        {
+            "id": x[0],
+            "content": x[1],
+            "created_at": x[2],
+            "sender": x[3],
+            "receiver": x[4],
+            "workout_id": x[5],
+            "workout_type": x[6],
+            "workout_date": x[7],
+        }
+        for x in mrows
+    ]
 
     return render_template("messages.html", messages=messages, workouts=workouts)
+
 
 @app.route("/edit_message/<int:message_id>", methods=["GET", "POST"])
 def edit_message(message_id):
@@ -270,8 +355,7 @@ def edit_message(message_id):
 
     db = get_db()
     msg = db.execute(
-        "SELECT id, sender_id, content FROM messages WHERE id = ?",
-        (message_id,)
+        "SELECT id, sender_id, content FROM messages WHERE id = ?", (message_id,)
     ).fetchone()
     if not msg:
         abort(404)
@@ -286,7 +370,9 @@ def edit_message(message_id):
             flash("Sisältö vaaditaan (max 1000 merkkiä).", "error")
             return render_template("edit_message.html", message=msg)
 
-        db.execute("UPDATE messages SET content = ? WHERE id = ?", (content, message_id))
+        db.execute(
+            "UPDATE messages SET content = ? WHERE id = ?", (content, message_id)
+        )
         db.commit()
         flash("Viesti päivitetty.", "success")
         return redirect(url_for("messages_route"))
@@ -303,8 +389,7 @@ def delete_message(message_id):
 
     db = get_db()
     msg = db.execute(
-        "SELECT id, sender_id FROM messages WHERE id = ?",
-        (message_id,)
+        "SELECT id, sender_id FROM messages WHERE id = ?", (message_id,)
     ).fetchone()
     if not msg:
         abort(404)
@@ -337,6 +422,7 @@ def search():
         ).fetchall()
     return render_template("search.html", query=q, results=results)
 
+
 @app.route("/user/<int:user_id>")
 def show_user(user_id):
     if not require_login():
@@ -345,15 +431,14 @@ def show_user(user_id):
     db = get_db()
 
     user = db.execute(
-        "SELECT id, username FROM users WHERE id = ?",
-        (user_id,)
+        "SELECT id, username FROM users WHERE id = ?", (user_id,)
     ).fetchone()
     if not user:
         abort(404)
 
     stats_row = db.execute(
         "SELECT COUNT(*), COALESCE(SUM(duration), 0) FROM workouts WHERE user_id = ?",
-        (user_id,)
+        (user_id,),
     ).fetchone()
     if not stats_row:
         stats_row = (0, 0)
@@ -365,7 +450,7 @@ def show_user(user_id):
            WHERE user_id = ?
            GROUP BY type
            ORDER BY COUNT(*) DESC, type ASC""",
-        (user_id,)
+        (user_id,),
     ).fetchall()
     by_type = [{"type": r[0], "count": r[1], "minutes": r[2]} for r in rows]
 
@@ -374,24 +459,33 @@ def show_user(user_id):
            FROM workouts
            WHERE user_id = ?
            ORDER BY date DESC, id DESC""",
-        (user_id,)
+        (user_id,),
     ).fetchall()
 
-    return render_template("user.html", user=user, workouts=workouts, stats=stats, by_type=by_type)
+    return render_template(
+        "user.html", user=user, workouts=workouts, stats=stats, by_type=by_type
+    )
+
 
 @app.errorhandler(400)
 def bad_request(_e):
     return render_template("400.html"), 400
+
+
 @app.errorhandler(403)
 def forbidden(_e):
     return render_template("403.html"), 403
 
+
 @app.errorhandler(404)
 def not_found(_e):
     return render_template("404.html"), 404
+
+
 def require_login_or_403():
     if "user_id" not in session:
         abort(403)
+
 
 def login_required_view(fn):
     @wraps(fn)
@@ -399,7 +493,9 @@ def login_required_view(fn):
         if "user_id" not in session:
             return redirect(url_for("login"))
         return fn(*args, **kwargs)
+
     return wrapper
+
 
 if __name__ == "__main__":
     with app.app_context():

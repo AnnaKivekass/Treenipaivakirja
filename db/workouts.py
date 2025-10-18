@@ -14,12 +14,30 @@ def add_workout(user_id: int, date: str, wtype: str, duration: int, description:
 def list_workouts(user_id: int) -> List[Dict]:
     db = get_db()
     rows = db.execute("""
-        SELECT id, date, type, duration, description
-        FROM workouts
-        WHERE user_id = ?
-        ORDER BY date DESC, id DESC
+        SELECT
+            w.id,
+            w.date,
+            w.type,
+            w.duration,
+            w.description,
+            u.username    -- kolumni-indeksi 5
+        FROM workouts w
+        JOIN users u ON u.id = w.user_id
+        WHERE w.user_id = ?
+        ORDER BY w.date DESC, w.id DESC
     """, (user_id,)).fetchall()
-    return [dict(r) for r in rows]
+
+    result: List[Dict] = []
+    for row in rows:
+        result.append({
+            "id": row["id"],
+            "date": row["date"],
+            "type": row["type"],
+            "duration": row["duration"],
+            "description": row["description"],
+            "username": row[5],
+        })
+    return result
 
 def get_workout(workout_id: int) -> Optional[dict]:
     db = get_db()
