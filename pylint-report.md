@@ -1,6 +1,4 @@
-cat > pylint_raportti.md << 'EOF'
-
-Pylint antoi seuraavan raportin sovelluksesta:
+# Pylint antoi seuraavan raportin sovelluksesta:
 
 ```text
 ************* Module app
@@ -154,5 +152,3 @@ Yhteenveto
 
     Koodi on muotoiltu black ja isort -työkaluilla.
    
-
-EOF
