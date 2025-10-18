@@ -5,21 +5,26 @@ from flask import (
 )
 from pathlib import Path
 import secrets
-import sqlite3
 from functools import wraps
 
-from db import (
-    get_db, close_db, init_db,
-    add_user, get_user, verify_password,
-    add_workout, list_workouts, get_workout,
-    add_message, list_messages,
-    list_categories, assign_categories_to_workout, list_workout_categories,
-)
+from db.connection import get_db, close_db
+from db.users import add_user, get_user, get_user_by_id, verify_password
+from db.workouts import add_workout, list_workouts, get_workout
+from db.messages import add_message, list_messages, get_message_for_edit, update_message_content
+from db.categories import list_categories, assign_categories_to_workout, list_workout_categories
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret"
 app.config["DATABASE"] = "instance/app.sqlite3"
 Path("instance").mkdir(exist_ok=True)
+
+app.teardown_appcontext(close_db)
+
+@app.before_request
+def ensure_csrf():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
+    g.csrf_token = session["csrf_token"]
 
 @app.before_request
 def ensure_csrf():
