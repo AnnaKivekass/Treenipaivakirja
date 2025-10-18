@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import sqlite3
 from pathlib import Path
-from flask import g, current_app
+
+from flask import current_app, g
 
 
 def get_db() -> sqlite3.Connection:

@@ -1,33 +1,14 @@
-from flask import (
-    Flask,
-    render_template,
-    redirect,
-    url_for,
-    request,
-    session,
-    flash,
-    abort,
-    g,
-    get_flashed_messages,
-)
-from pathlib import Path
 import secrets
 from functools import wraps
+from pathlib import Path
 
-from db.connection import get_db, close_db
-from db.users import add_user, get_user, get_user_by_id, verify_password
-from db.workouts import add_workout, list_workouts, get_workout
-from db.messages import (
-    add_message,
-    list_messages,
-    get_message_for_edit,
-    update_message_content,
-)
-from db.categories import (
-    list_categories,
-    assign_categories_to_workout,
-    list_workout_categories,
-)
+from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
+
+from db.categories import assign_categories_to_workout, list_categories, list_workout_categories
+from db.connection import close_db, get_db
+from db.messages import add_message, get_message_for_edit, list_messages, update_message_content
+from db.users import add_user, get_user, verify_password
+from db.workouts import add_workout, get_workout, list_workouts
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret"
@@ -79,9 +60,7 @@ def index():
     if not require_login():
         return redirect(url_for("login"))
     workouts = list_workouts(session["user_id"])
-    workouts = [
-        dict(w) | {"categories": list_workout_categories(w["id"])} for w in workouts
-    ]
+    workouts = [dict(w) | {"categories": list_workout_categories(w["id"])} for w in workouts]
     return render_template("index.html", workouts=workouts)
 
 
@@ -154,9 +133,7 @@ def add_workout_route():
         wtype = (request.form.get("type") or "").strip()
         duration_raw = (request.form.get("duration") or "").strip()
         description = (request.form.get("description") or "").strip()
-        selected_ids = [
-            int(x) for x in request.form.getlist("categories") if x.isdigit()
-        ]
+        selected_ids = [int(x) for x in request.form.getlist("categories") if x.isdigit()]
 
         errors = []
         if not date:
@@ -191,9 +168,7 @@ def add_workout_route():
             )
 
         try:
-            wid = add_workout(
-                session["user_id"], date, wtype, duration_val, description or None
-            )
+            wid = add_workout(session["user_id"], date, wtype, duration_val, description or None)
             assign_categories_to_workout(wid, selected_ids)
         except sqlite3.IntegrityError:
             abort(403)
@@ -263,10 +238,7 @@ def messages_route():
                    JOIN users u ON u.id = w.user_id
                    ORDER BY w.date DESC, w.id DESC"""
             ).fetchall()
-            workouts = [
-                {"id": r[0], "date": r[1], "type": r[2], "username": r[3]}
-                for r in wrows
-            ]
+            workouts = [{"id": r[0], "date": r[1], "type": r[2], "username": r[3]} for r in wrows]
 
             mrows = db.execute(
                 """SELECT m.id, m.content, m.created_at,
@@ -291,14 +263,10 @@ def messages_route():
                 for x in mrows
             ]
 
-            return render_template(
-                "messages.html", messages=messages, workouts=workouts
-            )
+            return render_template("messages.html", messages=messages, workouts=workouts)
 
         workout_id = int(workout_id_raw)
-        w = db.execute(
-            "SELECT id, user_id FROM workouts WHERE id = ?", (workout_id,)
-        ).fetchone()
+        w = db.execute("SELECT id, user_id FROM workouts WHERE id = ?", (workout_id,)).fetchone()
         if not w:
             abort(404)
 
@@ -318,9 +286,7 @@ def messages_route():
            JOIN users u ON u.id = w.user_id
            ORDER BY w.date DESC, w.id DESC"""
     ).fetchall()
-    workouts = [
-        {"id": r[0], "date": r[1], "type": r[2], "username": r[3]} for r in wrows
-    ]
+    workouts = [{"id": r[0], "date": r[1], "type": r[2], "username": r[3]} for r in wrows]
 
     mrows = db.execute(
         """SELECT m.id, m.content, m.created_at,
@@ -354,9 +320,7 @@ def edit_message(message_id):
         return redirect(url_for("login"))
 
     db = get_db()
-    msg = db.execute(
-        "SELECT id, sender_id, content FROM messages WHERE id = ?", (message_id,)
-    ).fetchone()
+    msg = db.execute("SELECT id, sender_id, content FROM messages WHERE id = ?", (message_id,)).fetchone()
     if not msg:
         abort(404)
     if msg["sender_id"] != session["user_id"]:
@@ -370,9 +334,7 @@ def edit_message(message_id):
             flash("Sisältö vaaditaan (max 1000 merkkiä).", "error")
             return render_template("edit_message.html", message=msg)
 
-        db.execute(
-            "UPDATE messages SET content = ? WHERE id = ?", (content, message_id)
-        )
+        db.execute("UPDATE messages SET content = ? WHERE id = ?", (content, message_id))
         db.commit()
         flash("Viesti päivitetty.", "success")
         return redirect(url_for("messages_route"))
@@ -388,9 +350,7 @@ def delete_message(message_id):
         abort(400)
 
     db = get_db()
-    msg = db.execute(
-        "SELECT id, sender_id FROM messages WHERE id = ?", (message_id,)
-    ).fetchone()
+    msg = db.execute("SELECT id, sender_id FROM messages WHERE id = ?", (message_id,)).fetchone()
     if not msg:
         abort(404)
     if msg["sender_id"] != session["user_id"]:
@@ -430,9 +390,7 @@ def show_user(user_id):
 
     db = get_db()
 
-    user = db.execute(
-        "SELECT id, username FROM users WHERE id = ?", (user_id,)
-    ).fetchone()
+    user = db.execute("SELECT id, username FROM users WHERE id = ?", (user_id,)).fetchone()
     if not user:
         abort(404)
 
@@ -462,9 +420,7 @@ def show_user(user_id):
         (user_id,),
     ).fetchall()
 
-    return render_template(
-        "user.html", user=user, workouts=workouts, stats=stats, by_type=by_type
-    )
+    return render_template("user.html", user=user, workouts=workouts, stats=stats, by_type=by_type)
 
 
 @app.errorhandler(400)

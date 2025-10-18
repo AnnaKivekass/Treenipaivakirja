@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 import hashlib
 from typing import Optional
+
 from .connection import get_db
 
 

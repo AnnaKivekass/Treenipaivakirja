@@ -1,19 +1,27 @@
 from __future__ import annotations
-from typing import Optional, List, Dict
+
+from typing import Dict, List, Optional
+
 from .connection import get_db
+
 
 def add_workout(user_id: int, date: str, wtype: str, duration: int, description: Optional[str]) -> int:
     db = get_db()
-    cur = db.execute("""
+    cur = db.execute(
+        """
         INSERT INTO workouts (user_id, date, type, duration, description)
         VALUES (?, ?, ?, ?, ?)
-    """, (user_id, date, wtype, duration, description))
+    """,
+        (user_id, date, wtype, duration, description),
+    )
     db.commit()
     return int(cur.lastrowid)
 
+
 def list_workouts(user_id: int) -> List[Dict]:
     db = get_db()
-    rows = db.execute("""
+    rows = db.execute(
+        """
         SELECT
             w.id,
             w.date,
@@ -25,25 +33,33 @@ def list_workouts(user_id: int) -> List[Dict]:
         JOIN users u ON u.id = w.user_id
         WHERE w.user_id = ?
         ORDER BY w.date DESC, w.id DESC
-    """, (user_id,)).fetchall()
+    """,
+        (user_id,),
+    ).fetchall()
 
     result: List[Dict] = []
     for row in rows:
-        result.append({
-            "id": row["id"],
-            "date": row["date"],
-            "type": row["type"],
-            "duration": row["duration"],
-            "description": row["description"],
-            "username": row[5],
-        })
+        result.append(
+            {
+                "id": row["id"],
+                "date": row["date"],
+                "type": row["type"],
+                "duration": row["duration"],
+                "description": row["description"],
+                "username": row[5],
+            }
+        )
     return result
+
 
 def get_workout(workout_id: int) -> Optional[dict]:
     db = get_db()
-    row = db.execute("""
+    row = db.execute(
+        """
         SELECT id, user_id, date, type, duration, description
         FROM workouts
         WHERE id = ?
-    """, (workout_id,)).fetchone()
+    """,
+        (workout_id,),
+    ).fetchone()
     return dict(row) if row else None
