@@ -1,4 +1,5 @@
 import secrets
+import sqlite3
 from functools import wraps
 from pathlib import Path
 
@@ -459,7 +460,6 @@ def profile():
         return redirect(url_for("login"))
     return redirect(url_for("user_page", user_id=session["user_id"]))
 
-
 @app.route("/user/<int:user_id>")
 def user_page(user_id):
     """Näytä käyttäjän treenit."""
@@ -474,7 +474,6 @@ def user_page(user_id):
     if user is None:
         abort(404)
 
-    # db.workouts.list_workouts(user_id) hakee käyttäjän treenit
     workouts = list_workouts(user_id)
 
     return render_template("user.html", user=user, workouts=workouts)
@@ -550,7 +549,6 @@ def edit_workout(workout_id):
         flash("Treeni päivitetty.", "success")
         return redirect(url_for("user_page", user_id=session["user_id"]))
 
-    # GET → esitä lomake valmiiksi täytettynä
     form = {
         "date": workout["date"],
         "type": workout["type"],
@@ -570,7 +568,7 @@ def edit_workout(workout_id):
 
 @app.route("/workout/<int:workout_id>/delete", methods=["POST"])
 def delete_workout(workout_id):
-    """Poista oma treeni."""
+    """Poista oma treeni käyttäjäsivulta."""
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -596,7 +594,4 @@ def delete_workout(workout_id):
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        Path("instance").mkdir(exist_ok=True)
-        init_db("schema.sql")
     app.run(debug=True)
