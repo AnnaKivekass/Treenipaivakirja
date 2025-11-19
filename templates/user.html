@@ -1,36 +1,54 @@
 {% extends "base.html" %}
+
 {% block content %}
-<h1>Käyttäjä {{ user.username }}</h1>
+  <h1>Käyttäjä: {{ user.username }}</h1>
 
-<h2>Tilastot</h2>
-<p>Treenejä yhteensä: <strong>{{ stats['total_count'] }}</strong></p>
-<p>Kesto yhteensä: <strong>{{ stats['total_minutes'] }} min</strong></p>
+  <p>
+    <a href="{{ url_for('index') }}">Etusivu</a> |
+    <a href="{{ url_for('add_workout') }}">Lisää treeni</a>
+  </p>
 
-<h3>Tyypeittäin</h3>
-<ul>
-  {% for row in by_type %}
-    <li>{{ row['type'] }} — {{ row['count'] }} kpl, {{ row['minutes'] }} min</li>
+  {% if workouts %}
+    <h2>Omat treenit</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Päivämäärä</th>
+          <th>Tyyppi</th>
+          <th>Kesto (min)</th>
+          <th>Kuvaus</th>
+          <th>Toiminnot</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for w in workouts %}
+          <tr>
+            <td>{{ w.date }}</td>
+            <td>{{ w.type }}</td>
+            <td>{{ w.duration }}</td>
+            <td>{{ w.description }}</td>
+            <td>
+              {% if session.get('user_id') == user.id %}
+                <a href="{{ url_for('edit_workout', workout_id=w.id) }}">Muokkaa</a>
+
+                <form action="{{ url_for('delete_workout', workout_id=w.id) }}"
+                      method="post"
+                      style="display:inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                  <button type="submit"
+                          onclick="return confirm('Poistetaanko tämä treeni?');">
+                    Poista
+                  </button>
+                </form>
+              {% else %}
+                <em>Ei oikeuksia</em>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   {% else %}
-    <li>Ei tilastoja.</li>
-  {% endfor %}
-</ul>
-
-<hr>
-
-<h2>Treeni­lista</h2>
-{% if workouts %}
-  <ul>
-    {% for workout in workouts %}
-      <li>
-        <strong>{{ workout.date }}:</strong> {{ workout.type }} – {{ workout.duration }} min<br>
-        {{ workout.description }}
-      </li>
-    {% endfor %}
-  </ul>
-{% else %}
-  <p>Käyttäjä ei ole vielä lisännyt treenejä.</p>
-{% endif %}
-
-<p><a href="{{ url_for('index') }}">Takaisin treeniluetteloon</a> |
-<a href="{{ url_for('logout') }}">Kirjaudu ulos</a></p>
+    <p>Ei vielä yhtään treeniä.</p>
+  {% endif %}
 {% endblock %}

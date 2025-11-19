@@ -19,6 +19,7 @@
         <li><a href="{{ url_for('search') }}">Haku</a></li>
         <li><a href="{{ url_for('register') }}">Luo tunnus</a></li>
         {% if session.get('user_id') %}
+          <li><a href="{{ url_for('profile') }}">Oma sivu</a></li>
           <li><a href="{{ url_for('add_workout') }}">Lisää treeni</a></li>
           <li><a href="{{ url_for('messages_route') }}">Viestit</a></li>
           <li><a href="{{ url_for('logout') }}">Kirjaudu ulos</a></li>
@@ -43,4 +44,3 @@
 
 </body>
 </html>
-

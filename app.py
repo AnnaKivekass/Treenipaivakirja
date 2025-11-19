@@ -5,7 +5,7 @@ from pathlib import Path
 from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
 
 from db.categories import assign_categories_to_workout, list_categories, list_workout_categories
-from db.connection import close_db, get_db
+from db.connection import close_db, get_db, init_db
 from db.messages import add_message, get_message_for_edit, list_messages, update_message_content
 from db.users import add_user, get_user, verify_password
 from db.workouts import add_workout, get_workout, list_workouts
@@ -451,6 +451,148 @@ def login_required_view(fn):
         return fn(*args, **kwargs)
 
     return wrapper
+
+@app.route("/profile")
+def profile():
+    """Ohjaa kirjautuneen käyttäjän omalle sivulle."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    return redirect(url_for("user_page", user_id=session["user_id"]))
+
+
+@app.route("/user/<int:user_id>")
+def user_page(user_id):
+    """Näytä käyttäjän treenit."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db()
+    user = db.execute(
+        "SELECT id, username FROM users WHERE id = ?",
+        (user_id,),
+    ).fetchone()
+    if user is None:
+        abort(404)
+
+    # db.workouts.list_workouts(user_id) hakee käyttäjän treenit
+    workouts = list_workouts(user_id)
+
+    return render_template("user.html", user=user, workouts=workouts)
+
+
+@app.route("/workout/<int:workout_id>/edit", methods=["GET", "POST"])
+def edit_workout(workout_id):
+    """Muokkaa olemassa olevaa treeniä."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    workout = get_workout(workout_id)
+    if workout is None:
+        abort(404)
+    if workout["user_id"] != session["user_id"]:
+        abort(403)
+
+    if request.method == "POST":
+        if request.form.get("csrf_token") != session.get("csrf_token"):
+            abort(400)
+
+        date = (request.form.get("date") or "").strip()
+        wtype = (request.form.get("type") or "").strip()
+        duration_raw = (request.form.get("duration") or "").strip()
+        description = (request.form.get("description") or "").strip()
+        selected_ids = [int(x) for x in request.form.getlist("categories") if x.isdigit()]
+
+        errors = []
+        if not date:
+            errors.append("Päivämäärä vaaditaan.")
+        if not wtype:
+            errors.append("Tyyppi vaaditaan.")
+        if len(wtype) > 50:
+            errors.append("Tyyppi on liian pitkä (max 50).")
+        if len(description) > 1000:
+            errors.append("Kuvaus on liian pitkä (max 1000).")
+        try:
+            duration_val = int(duration_raw)
+            if duration_val < 0 or duration_val > 100000:
+                errors.append("Kesto ei kelpaa.")
+        except ValueError:
+            errors.append("Keston tulee olla kokonaisluku.")
+
+        if errors:
+            for e in errors:
+                flash(e, "error")
+            form = {
+                "date": date,
+                "type": wtype,
+                "duration": duration_raw,
+                "description": description,
+            }
+            return render_template(
+                "workout_form.html",
+                form=form,
+                categories=list_categories(),
+                selected=set(selected_ids),
+            )
+
+        db = get_db()
+        db.execute(
+            """
+            UPDATE workouts
+            SET date = ?, type = ?, duration = ?, description = ?
+            WHERE id = ? AND user_id = ?
+            """,
+            (date, wtype, duration_val, description or None, workout_id, session["user_id"]),
+        )
+        db.commit()
+
+        assign_categories_to_workout(workout_id, selected_ids)
+
+        flash("Treeni päivitetty.", "success")
+        return redirect(url_for("user_page", user_id=session["user_id"]))
+
+    # GET → esitä lomake valmiiksi täytettynä
+    form = {
+        "date": workout["date"],
+        "type": workout["type"],
+        "duration": workout["duration"],
+        "description": workout["description"] or "",
+    }
+    current_cats = list_workout_categories(workout_id)
+    selected_ids = {c["id"] for c in current_cats}
+
+    return render_template(
+        "workout_form.html",
+        form=form,
+        categories=list_categories(),
+        selected=selected_ids,
+    )
+
+
+@app.route("/workout/<int:workout_id>/delete", methods=["POST"])
+def delete_workout(workout_id):
+    """Poista oma treeni."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if request.form.get("csrf_token") != session.get("csrf_token"):
+        abort(400)
+
+    db = get_db()
+    w = db.execute(
+        "SELECT id, user_id FROM workouts WHERE id = ?",
+        (workout_id,),
+    ).fetchone()
+
+    if w is None:
+        abort(404)
+    if w["user_id"] != session["user_id"]:
+        abort(403)
+
+    db.execute("DELETE FROM workouts WHERE id = ?", (workout_id,))
+    db.commit()
+
+    flash("Treeni poistettu.", "success")
+    return redirect(url_for("user_page", user_id=session["user_id"]))
 
 
 if __name__ == "__main__":
