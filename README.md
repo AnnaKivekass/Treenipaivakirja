@@ -1,7 +1,7 @@
 #Sovelluksessa on seuraavat ominaisuudet
-#- Käyttäjätilit:
-# - Käyttäjä voi rekisteröityä ja kirjautua sisään.
-# - Jokaisella käyttäjällä on oma näkymä, jossa näkyvät hänen lisäämänsä treenit.
+- Käyttäjätilit:
+ - Käyttäjä voi rekisteröityä ja kirjautua sisään.
+ - Jokaisella käyttäjällä on oma näkymä, jossa näkyvät hänen lisäämänsä treenit.
 
 #- Treenien hallinta:
 # - Käyttäjä voi lisätä uuden treenin, joka sisältää päivämäärän, tyypin, keston ja kuvauksen.
