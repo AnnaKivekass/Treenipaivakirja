@@ -1,4 +1,4 @@
-##Sovelluksessa on seuraavat ominaisuudet
+Sovelluksessa on seuraavat ominaisuudet
 - Käyttäjätilit:
  - Käyttäjä voi rekisteröityä ja kirjautua sisään.
  - Jokaisella käyttäjällä on oma näkymä, jossa näkyvät hänen lisäämänsä treenit.
