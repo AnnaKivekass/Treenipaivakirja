@@ -27,16 +27,16 @@ Jos Flask ei ole vielä asennettu, suorita terminaalissa komentorivillä:
 pip install flask
 ```   
 
-#Sovellus käyttää SQLite-tietokantaa.
-#Tiedostossa schema.sql on taulujen määritykset. Luo tietokanta näin:
+Sovellus käyttää SQLite-tietokantaa.
+Tiedostossa schema.sql on taulujen määritykset. Luo tietokanta näin:
 
 ```   
 sqlite3 instance/app.sqlite3 < schema.sql
 ```   
 
-#Käynnistä sovellus
+Käynnistä sovellus
 
-#Suorita seuraava komento:
+Suorita seuraava komento:
 ```   
 flask --app app.py run
 ```   
