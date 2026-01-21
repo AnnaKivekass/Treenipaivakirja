@@ -1,42 +1,63 @@
-Sovelluksessa on seuraavat ominaisuudet
-- Käyttäjätilit:
- - Käyttäjä voi rekisteröityä ja kirjautua sisään.
- - Jokaisella käyttäjällä on oma näkymä, jossa näkyvät hänen lisäämänsä treenit.
+# Treenipäiväkirja
 
-- Treenien hallinta:
- - Käyttäjä voi lisätä uuden treenin, joka sisältää päivämäärän, tyypin, keston ja kuvauksen.
- - Kaikki käyttäjän treenit näkyvät etusivulla.
- - Treenejä voi myös hakea hakutoiminnolla.
+Flask-pohjainen web-sovellus treenien kirjaamiseen ja tarkasteluun.  
+Sovelluksessa käyttäjät voivat lisätä treenejä, luokitella niitä, tarkastella tilastoja sekä lähettää viestejä toisten käyttäjien treeneihin liittyen.
 
-- Luokittelu:
- - Treenille voi valita yhden tai useamman luokan (esim. voima, cardio, venyttely).
- - Luokat tallennetaan tietokantaan ja niitä voidaan hyödyntää tilastoissa ja hauissa.
+---
 
-- Viestit:
- - Käyttäjät voivat lähettää viestejä toisten käyttäjien treeneihin liittyen.
- - Viestit tallennetaan tietokantaan ja näkyvät viestisivulla.
+## Ominaisuudet
 
-- Tilastot ja käyttäjäsivu:
- - Käyttäjäsivulla näkyy yhteenveto käyttäjän lisäämistä treeneistä ja mahdolliset tilastot.
+- **Käyttäjätilit**
+  - Rekisteröityminen ja kirjautuminen
+  - Jokaisella käyttäjällä oma näkymä omiin treeneihin
 
-Sovelluksen asennus ja käyttöohjeet
+- **Treenien hallinta**
+  - Uuden treenin lisääminen (päivämäärä, tyyppi, kesto, kuvaus)
+  - Käyttäjän treenit näkyvät etusivulla
+  - Treenien haku
 
-Jos Flask ei ole vielä asennettu, suorita terminaalissa komentorivillä:
+- **Luokittelu**
+  - Treenille voi valita yhden tai useamman luokan (esim. voima, cardio, venyttely)
+  - Luokat tallennetaan tietokantaan ja niitä hyödynnetään hauissa
 
-```
+- **Viestit**
+  - Käyttäjät voivat lähettää viestejä toisten käyttäjien treeneihin liittyen
+  - Viestit tallennetaan tietokantaan ja näkyvät viestisivulla
+
+- **Tilastot ja käyttäjäsivu**
+  - Käyttäjäsivulla näkyy yhteenveto käyttäjän lisäämistä treeneistä
+
+---
+
+## Teknologiat
+
+- Python 3
+- Flask
+- SQLite
+- HTML / CSS
+
+---
+
+## Asennus ja käyttöohjeet
+
+### 1. Kloonaa repositorio
+
+```bash
+git clone https://github.com/AnnaKivekass/Treenipaivakirja.git
+cd treenipaivakirja
+
+## Luo ja aktivoi virtuaaliympäristö
+python3 -m venv venv
+source venv/bin/activate
+
+## Asenna flask
 pip install flask
-```   
 
-Sovellus käyttää SQLite-tietokantaa.
-Tiedostossa schema.sql on taulujen määritykset. Luo tietokanta näin:
-
-```   
+## Alusta tietokanta
+mkdir -p instance
 sqlite3 instance/app.sqlite3 < schema.sql
-```   
+sqlite3 instance/app.sqlite3 < seed.sql
 
-Käynnistä sovellus
-
-Suorita seuraava komento:
-```   
+## Käynnistä sovellus
 flask --app app.py run
-```   
+
