@@ -16,9 +16,13 @@ VALUES
 
 INSERT INTO categories (id, name)
 VALUES
-  (1, 'voima'),
-  (2, 'cardio'),
-  (3, 'venyttely');
+  (1, 'Juoksu'),
+  (2, 'Pyöräily'),
+  (3, 'Uinti'),
+  (4, 'Kuntosali'),
+  (5, 'Jooga'),
+  (6, 'Kävely'),
+  (7, 'Muu');
 
 INSERT INTO workouts (id, user_id, date, type, duration, description)
 VALUES
