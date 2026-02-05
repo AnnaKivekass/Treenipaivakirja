@@ -39,6 +39,6 @@ VALUES
 
 INSERT INTO messages (workout_id, sender_id, receiver_id, content)
 VALUES
-  (1, 2, 1, 'Hyvä treeni! 💪'),
+  (1, 2, 1, 'Hyvä treeni! '),
   (1, 3, 1, 'Kuulostaa rankalta'),
   (2, 1, 2, 'Lenkki kulki hyvin');
