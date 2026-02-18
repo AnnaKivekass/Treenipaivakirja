@@ -28,8 +28,12 @@
         {% endif %}
 
         {% if w.description %}
-          <p>{{ w.description }}</p>
+          <div style="white-space: pre-wrap;">
+            {{ w.description }}
+          </div>
+
         {% endif %}
+
       </li>
     {% endfor %}
   </ul>

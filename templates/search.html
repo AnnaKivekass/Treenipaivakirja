@@ -21,7 +21,12 @@
         {% for w in results %}
             <li>
                 <strong>{{ w.date }}:</strong> {{ w.type }} – {{ w.duration }} min<br>
-                {{ w.description }}
+                {% if w.description %}
+                <div style="white-space: pre-wrap;">
+                    {{ w.description }}
+                </div>
+                {% endif %}
+
             </li>
         {% endfor %}
         </ul>
