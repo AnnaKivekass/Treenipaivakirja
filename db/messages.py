@@ -1,9 +1,6 @@
 from __future__ import annotations
-
 from typing import Dict, List, Optional
-
 from .connection import get_db
-
 
 def add_message(sender_id: int, receiver_id: int, workout_id: int, content: str) -> None:
     db = get_db()
@@ -70,7 +67,6 @@ def list_messages(receiver_id: int) -> List[Dict]:
         )
     return result
 
-
 def update_message(message_id: int, content: str) -> None:
     db = get_db()
     db.execute(
@@ -92,19 +88,43 @@ def list_workouts_for_messages():
            ORDER BY w.date DESC, w.id DESC"""
     ).fetchall()
 
-
 def list_messages_full():
     db = get_db()
-    return db.execute(
-        """SELECT m.id, m.content, m.created_at,
-                  s.username, r.username, w.id, w.type, w.date
-           FROM messages m
-           JOIN users s ON s.id = m.sender_id
-           JOIN users r ON r.id = m.receiver_id
-           JOIN workouts w ON w.id = m.workout_id
-           ORDER BY m.created_at DESC, m.id DESC"""
+    rows = db.execute(
+        """
+        SELECT 
+            m.id,
+            m.content,
+            m.created_at,
+            s.username,
+            r.username,
+            w.id,
+            w.type,
+            w.date
+        FROM messages m
+        JOIN users s ON s.id = m.sender_id
+        JOIN users r ON r.id = m.receiver_id
+        JOIN workouts w ON w.id = m.workout_id
+        ORDER BY m.created_at DESC, m.id DESC
+        """
     ).fetchall()
 
+    result = []
+    for row in rows:
+        result.append(
+            {
+                "id": row[0],
+                "content": row[1],
+                "created_at": row[2],
+                "sender": row[3],
+                "receiver": row[4],
+                "workout_id": row[5],
+                "workout_type": row[6],
+                "workout_date": row[7],
+            }
+        )
+
+    return result
 
 def get_workout_owner(workout_id: int):
     db = get_db()

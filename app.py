@@ -6,7 +6,17 @@ from pathlib import Path
 from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
 from db.categories import assign_categories_to_workout, list_categories, list_workout_categories
 from db.connection import close_db, init_db
-from db.messages import add_message, get_message, update_message, delete_message_by_id
+
+from db.messages import (
+    add_message,
+    get_message,
+    update_message,
+    delete_message_by_id,
+    list_workouts_for_messages,
+    list_messages_full,
+    get_workout_owner,
+)
+
 from db.users import add_user, get_user, verify_password, get_user_by_id
 from db.workouts import (
     add_workout,
@@ -17,7 +27,6 @@ from db.workouts import (
     update_workout,
     delete_workout_by_id
 )
-
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret"
