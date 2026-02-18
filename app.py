@@ -25,7 +25,9 @@ from db.workouts import (
     list_all_workouts,
     search_workouts,
     update_workout,
-    delete_workout_by_id
+    delete_workout_by_id,
+    get_user_stats,
+    get_user_stats_by_type
 )
 
 app = Flask(__name__)
@@ -367,14 +369,12 @@ def login_required_view(fn):
 
 @app.route("/profile")
 def profile():
-    """Ohjaa kirjautuneen käyttäjän omalle sivulle."""
     if "user_id" not in session:
         return redirect(url_for("login"))
     return redirect(url_for("user_page", user_id=session["user_id"]))
 
 @app.route("/user/<int:user_id>")
 def user_page(user_id):
-    """Näytä käyttäjän treenit."""
     if not require_login():
         return redirect(url_for("login"))
 
@@ -383,12 +383,20 @@ def user_page(user_id):
         abort(404)
 
     workouts = list_workouts(user_id)
+    stats = get_user_stats(user_id)
+    by_type = get_user_stats_by_type(user_id)
 
-    return render_template("user.html", user=user, workouts=workouts)
+    return render_template(
+        "user.html",
+        user=user,
+        workouts=workouts,
+        stats=stats,
+        by_type=by_type,
+    )
+
 
 @app.route("/workout/<int:workout_id>/edit", methods=["GET", "POST"])
 def edit_workout(workout_id):
-    """Muokkaa olemassa olevaa treeniä."""
     if "user_id" not in session:
         return redirect(url_for("login"))
 

@@ -8,6 +8,26 @@
     <a href="{{ url_for('add_workout') }}">Lisää treeni</a>
   </p>
 
+  <h2>Tilastot</h2>
+
+  <div class="stats">
+    <p><strong>Treenejä yhteensä:</strong> {{ stats.total_count }}</p>
+    <p><strong>Minuutteja yhteensä:</strong> {{ stats.total_minutes }}</p>
+  </div>
+
+  {% if by_type %}
+    <h3>Jakauma tyypeittäin</h3>
+    <ul>
+      {% for item in by_type %}
+        <li>
+          {{ item.type }}:
+          {{ item.count }} kpl,
+          {{ item.minutes }} min
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
   {% if workouts %}
     <h2>Omat treenit</h2>
     <table>
@@ -26,7 +46,7 @@
             <td>{{ w.date }}</td>
             <td>{{ w.type }}</td>
             <td>{{ w.duration }}</td>
-            <td>{{ w.description }}</td>
+            <td style="white-space: pre-line;">{{ w.description }}</td>
             <td>
               {% if session.get('user_id') == user.id %}
                 <a href="{{ url_for('edit_workout', workout_id=w.id) }}">Muokkaa</a>

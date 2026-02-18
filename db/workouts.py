@@ -124,3 +124,32 @@ def delete_workout_by_id(workout_id: int, user_id: int):
     db.execute("DELETE FROM workouts WHERE id = ?", (workout_id,))
     db.commit()
     return True
+
+def get_user_stats(user_id: int):
+    db = get_db()
+    row = db.execute(
+        "SELECT COUNT(*), COALESCE(SUM(duration), 0) FROM workouts WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()
+
+    return {
+        "total_count": row[0] or 0,
+        "total_minutes": row[1] or 0,
+    }
+
+
+def get_user_stats_by_type(user_id: int):
+    db = get_db()
+    rows = db.execute(
+        """SELECT type, COUNT(*), COALESCE(SUM(duration), 0)
+           FROM workouts
+           WHERE user_id = ?
+           GROUP BY type
+           ORDER BY COUNT(*) DESC, type ASC""",
+        (user_id,),
+    ).fetchall()
+
+    return [
+        {"type": r[0], "count": r[1], "minutes": r[2]}
+        for r in rows
+    ]

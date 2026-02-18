@@ -5,7 +5,7 @@ from flask import g, current_app
 
 
 def get_db():
-    """Hae tietokantayhteys nykyiseen Flask-sovellukseen."""
+    """Get a database connection for the Flask"""
     if "db" not in g:
         db_path = current_app.config.get("DATABASE")
         if not db_path:
@@ -23,14 +23,14 @@ def get_db():
 
 
 def close_db(e=None):
-    """Sulje tietokantayhteys sovelluskontekstin lopussa."""
+    """Close the database connection when the application context ends"""
     db = g.pop("db", None)
     if db is not None:
         db.close()
 
 
 def init_db(schema_path: str = "schema.sql"):
-    """Alustaa tietokannan ajamalla schema.sql-tiedoston."""
+    """"Initialize the database by running the schema.sql"""
     db = get_db()
     with open(schema_path, "r", encoding="utf-8") as f:
         db.executescript(f.read())
