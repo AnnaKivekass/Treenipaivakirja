@@ -32,7 +32,10 @@
     <li class="thread">
       <div><strong>{{ m.sender }}</strong> → <em>{{ m.receiver }}</em></div>
       <div>Treeni: {{ m.workout_date }} – {{ m.workout_type }}</div>
-      <div>{{ m.content }}</div>
+      <div style="white-space: pre-line;">
+        {{ m.content }}
+      </div>
+
       {% if session.user_id and session.username and m.sender == session.username %}
         <form action="{{ url_for('delete_message', message_id=m.id) }}" method="post" style="display:inline">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
