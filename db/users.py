@@ -50,3 +50,10 @@ def get_user_by_id(user_id: int) -> Optional[dict]:
 
 def verify_password(user_row: Optional[dict], password: str) -> bool:
     return bool(user_row) and user_row["password_hash"] == _hash_password(password)
+
+def get_user_by_id(user_id: int):
+    db = get_db()
+    return db.execute(
+        "SELECT id, username FROM users WHERE id = ?",
+        (user_id,),
+    ).fetchone()

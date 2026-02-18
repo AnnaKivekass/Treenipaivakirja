@@ -4,12 +4,20 @@ from functools import wraps
 from pathlib import Path
 
 from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
-
 from db.categories import assign_categories_to_workout, list_categories, list_workout_categories
-from db.connection import close_db, get_db, init_db
-from db.messages import add_message, get_message_for_edit, list_messages, update_message_content
-from db.users import add_user, get_user, verify_password
-from db.workouts import add_workout, get_workout, list_workouts
+from db.connection import close_db, init_db
+from db.messages import add_message, get_message, update_message, delete_message_by_id
+from db.users import add_user, get_user, verify_password, get_user_by_id
+from db.workouts import (
+    add_workout,
+    get_workout,
+    list_workouts,
+    list_all_workouts,
+    search_workouts,
+    update_workout,
+    delete_workout_by_id
+)
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret"
@@ -17,7 +25,6 @@ app.config["DATABASE"] = "instance/app.sqlite3"
 Path("instance").mkdir(exist_ok=True)
 
 app.teardown_appcontext(close_db)
-
 
 @app.before_request
 def ensure_csrf():
@@ -189,24 +196,21 @@ def add_workout_route():
 def workouts_all():
     if not require_login():
         return redirect(url_for("login"))
-    db = get_db()
-    rows = db.execute(
-        """SELECT w.id, w.date, w.type, w.duration, w.description, u.username
-           FROM workouts w
-           JOIN users u ON u.id = w.user_id
-           ORDER BY w.date DESC, w.id DESC"""
-    ).fetchall()
+
+    rows = list_all_workouts()
+
     items = [
         {
-            "id": r[0],
-            "date": r[1],
-            "type": r[2],
-            "duration": r[3],
-            "description": r[4],
-            "username": r[5],
+            "id": r["id"],
+            "date": r["date"],
+            "type": r["type"],
+            "duration": r["duration"],
+            "description": r["description"],
+            "username": r["username"],
         }
         for r in rows
     ]
+
     return render_template("workouts_all.html", workouts=items)
 
 
@@ -214,8 +218,6 @@ def workouts_all():
 def messages_route():
     if not require_login():
         return redirect(url_for("login"))
-
-    db = get_db()
 
     if request.method == "POST":
         if request.form.get("csrf_token") != session.get("csrf_token"):
@@ -233,41 +235,18 @@ def messages_route():
         if errors:
             for e in errors:
                 flash(e, "error")
-            wrows = db.execute(
-                """SELECT w.id, w.date, w.type, u.username
-                   FROM workouts w
-                   JOIN users u ON u.id = w.user_id
-                   ORDER BY w.date DESC, w.id DESC"""
-            ).fetchall()
-            workouts = [{"id": r[0], "date": r[1], "type": r[2], "username": r[3]} for r in wrows]
 
-            mrows = db.execute(
-                """SELECT m.id, m.content, m.created_at,
-                          s.username, r.username, w.id, w.type, w.date
-                   FROM messages m
-                   JOIN users s ON s.id = m.sender_id
-                   JOIN users r ON r.id = m.receiver_id
-                   JOIN workouts w ON w.id = m.workout_id
-                   ORDER BY m.created_at DESC, m.id DESC"""
-            ).fetchall()
-            messages = [
-                {
-                    "id": x[0],
-                    "content": x[1],
-                    "created_at": x[2],
-                    "sender": x[3],
-                    "receiver": x[4],
-                    "workout_id": x[5],
-                    "workout_type": x[6],
-                    "workout_date": x[7],
-                }
-                for x in mrows
-            ]
+            workouts = list_workouts_for_messages()
+            messages = list_messages_full()
 
-            return render_template("messages.html", messages=messages, workouts=workouts)
+            return render_template(
+                "messages.html",
+                messages=messages,
+                workouts=workouts,
+            )
 
         workout_id = int(workout_id_raw)
-        w = db.execute("SELECT id, user_id FROM workouts WHERE id = ?", (workout_id,)).fetchone()
+        w = get_workout_owner(workout_id)
         if not w:
             abort(404)
 
@@ -281,47 +260,21 @@ def messages_route():
         flash("Viesti lähetetty.", "success")
         return redirect(url_for("messages_route"))
 
-    wrows = db.execute(
-        """SELECT w.id, w.date, w.type, u.username
-           FROM workouts w
-           JOIN users u ON u.id = w.user_id
-           ORDER BY w.date DESC, w.id DESC"""
-    ).fetchall()
-    workouts = [{"id": r[0], "date": r[1], "type": r[2], "username": r[3]} for r in wrows]
+    workouts = list_workouts_for_messages()
+    messages = list_messages_full()
 
-    mrows = db.execute(
-        """SELECT m.id, m.content, m.created_at,
-                  s.username, r.username, w.id, w.type, w.date
-           FROM messages m
-           JOIN users s ON s.id = m.sender_id
-           JOIN users r ON r.id = m.receiver_id
-           JOIN workouts w ON w.id = m.workout_id
-           ORDER BY m.created_at DESC, m.id DESC"""
-    ).fetchall()
-    messages = [
-        {
-            "id": x[0],
-            "content": x[1],
-            "created_at": x[2],
-            "sender": x[3],
-            "receiver": x[4],
-            "workout_id": x[5],
-            "workout_type": x[6],
-            "workout_date": x[7],
-        }
-        for x in mrows
-    ]
-
-    return render_template("messages.html", messages=messages, workouts=workouts)
-
+    return render_template(
+        "messages.html",
+        messages=messages,
+        workouts=workouts,
+    )
 
 @app.route("/edit_message/<int:message_id>", methods=["GET", "POST"])
 def edit_message(message_id):
     if not require_login():
         return redirect(url_for("login"))
 
-    db = get_db()
-    msg = db.execute("SELECT id, sender_id, content FROM messages WHERE id = ?", (message_id,)).fetchone()
+    msg = get_message(message_id)
     if not msg:
         abort(404)
     if msg["sender_id"] != session["user_id"]:
@@ -330,35 +283,36 @@ def edit_message(message_id):
     if request.method == "POST":
         if request.form.get("csrf_token") != session.get("csrf_token"):
             abort(400)
+
         content = (request.form.get("content") or "").strip()
+
         if not content or len(content) > 1000:
             flash("Sisältö vaaditaan (max 1000 merkkiä).", "error")
             return render_template("edit_message.html", message=msg)
 
-        db.execute("UPDATE messages SET content = ? WHERE id = ?", (content, message_id))
-        db.commit()
+        update_message(message_id, content)
+
         flash("Viesti päivitetty.", "success")
         return redirect(url_for("messages_route"))
 
     return render_template("edit_message.html", message=msg)
 
-
 @app.route("/delete_message/<int:message_id>", methods=["POST"])
 def delete_message(message_id):
     if not require_login():
         return redirect(url_for("login"))
+
     if request.form.get("csrf_token") != session.get("csrf_token"):
         abort(400)
 
-    db = get_db()
-    msg = db.execute("SELECT id, sender_id FROM messages WHERE id = ?", (message_id,)).fetchone()
+    msg = get_message(message_id)
     if not msg:
         abort(404)
     if msg["sender_id"] != session["user_id"]:
         abort(403)
 
-    db.execute("DELETE FROM messages WHERE id = ?", (message_id,))
-    db.commit()
+    delete_message_by_id(message_id)
+
     flash("Viesti poistettu.", "success")
     return redirect(url_for("messages_route"))
 
@@ -367,62 +321,11 @@ def delete_message(message_id):
 def search():
     if not require_login():
         return redirect(url_for("login"))
+
     q = (request.args.get("query") or "").strip()
-    results = []
-    if q:
-        db = get_db()
-        results = db.execute(
-            """
-            SELECT id, date, type, duration, description
-            FROM workouts
-            WHERE user_id = ?
-              AND (type LIKE ? OR description LIKE ? OR date LIKE ?)
-            ORDER BY date DESC, id DESC
-            """,
-            (session["user_id"], f"%{q}%", f"%{q}%", f"%{q}%"),
-        ).fetchall()
+    results = search_workouts(session["user_id"], q) if q else []
+
     return render_template("search.html", query=q, results=results)
-
-
-@app.route("/user/<int:user_id>")
-def show_user(user_id):
-    if not require_login():
-        return redirect(url_for("login"))
-
-    db = get_db()
-
-    user = db.execute("SELECT id, username FROM users WHERE id = ?", (user_id,)).fetchone()
-    if not user:
-        abort(404)
-
-    stats_row = db.execute(
-        "SELECT COUNT(*), COALESCE(SUM(duration), 0) FROM workouts WHERE user_id = ?",
-        (user_id,),
-    ).fetchone()
-    if not stats_row:
-        stats_row = (0, 0)
-    stats = {"total_count": stats_row[0] or 0, "total_minutes": stats_row[1] or 0}
-
-    rows = db.execute(
-        """SELECT type, COUNT(*), COALESCE(SUM(duration), 0)
-           FROM workouts
-           WHERE user_id = ?
-           GROUP BY type
-           ORDER BY COUNT(*) DESC, type ASC""",
-        (user_id,),
-    ).fetchall()
-    by_type = [{"type": r[0], "count": r[1], "minutes": r[2]} for r in rows]
-
-    workouts = db.execute(
-        """SELECT id, date, type, duration, description
-           FROM workouts
-           WHERE user_id = ?
-           ORDER BY date DESC, id DESC""",
-        (user_id,),
-    ).fetchall()
-
-    return render_template("user.html", user=user, workouts=workouts, stats=stats, by_type=by_type)
-
 
 @app.errorhandler(400)
 def bad_request(_e):
@@ -463,21 +366,16 @@ def profile():
 @app.route("/user/<int:user_id>")
 def user_page(user_id):
     """Näytä käyttäjän treenit."""
-    if "user_id" not in session:
+    if not require_login():
         return redirect(url_for("login"))
 
-    db = get_db()
-    user = db.execute(
-        "SELECT id, username FROM users WHERE id = ?",
-        (user_id,),
-    ).fetchone()
+    user = get_user_by_id(user_id)
     if user is None:
         abort(404)
 
     workouts = list_workouts(user_id)
 
     return render_template("user.html", user=user, workouts=workouts)
-
 
 @app.route("/workout/<int:workout_id>/edit", methods=["GET", "POST"])
 def edit_workout(workout_id):
@@ -510,6 +408,7 @@ def edit_workout(workout_id):
             errors.append("Tyyppi on liian pitkä (max 50).")
         if len(description) > 1000:
             errors.append("Kuvaus on liian pitkä (max 1000).")
+
         try:
             duration_val = int(duration_raw)
             if duration_val < 0 or duration_val > 100000:
@@ -520,12 +419,14 @@ def edit_workout(workout_id):
         if errors:
             for e in errors:
                 flash(e, "error")
+
             form = {
                 "date": date,
                 "type": wtype,
                 "duration": duration_raw,
                 "description": description,
             }
+
             return render_template(
                 "workout_form.html",
                 form=form,
@@ -533,16 +434,14 @@ def edit_workout(workout_id):
                 selected=set(selected_ids),
             )
 
-        db = get_db()
-        db.execute(
-            """
-            UPDATE workouts
-            SET date = ?, type = ?, duration = ?, description = ?
-            WHERE id = ? AND user_id = ?
-            """,
-            (date, wtype, duration_val, description or None, workout_id, session["user_id"]),
+        update_workout(
+            workout_id,
+            session["user_id"],
+            date,
+            wtype,
+            duration_val,
+            description or None,
         )
-        db.commit()
 
         assign_categories_to_workout(workout_id, selected_ids)
 
@@ -565,29 +464,18 @@ def edit_workout(workout_id):
         selected=selected_ids,
     )
 
-
 @app.route("/workout/<int:workout_id>/delete", methods=["POST"])
 def delete_workout(workout_id):
-    """Poista oma treeni käyttäjäsivulta."""
     if "user_id" not in session:
         return redirect(url_for("login"))
 
     if request.form.get("csrf_token") != session.get("csrf_token"):
         abort(400)
 
-    db = get_db()
-    w = db.execute(
-        "SELECT id, user_id FROM workouts WHERE id = ?",
-        (workout_id,),
-    ).fetchone()
+    success = delete_workout_by_id(workout_id, session["user_id"])
 
-    if w is None:
-        abort(404)
-    if w["user_id"] != session["user_id"]:
+    if not success:
         abort(403)
-
-    db.execute("DELETE FROM workouts WHERE id = ?", (workout_id,))
-    db.commit()
 
     flash("Treeni poistettu.", "success")
     return redirect(url_for("user_page", user_id=session["user_id"]))
