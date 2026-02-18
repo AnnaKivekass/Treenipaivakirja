@@ -4,34 +4,35 @@
 {% block content %}
 <h1>Omat treenit</h1>
 
-<p>
+<div class="actions">
   <a href="{{ url_for('add_workout') }}">Lisää uusi treeni</a> |
   <a href="{{ url_for('search') }}">Hae treenejä</a> |
   <a href="{{ url_for('messages_route') }}">Viestit</a> |
-  <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
-</p>
-
-<a href="{{ url_for('workouts_all') }}">Kaikki treenit</a> |
+  <a href="{{ url_for('logout') }}">Kirjaudu ulos</a> |
+  <a href="{{ url_for('workouts_all') }}">Kaikki treenit</a>
+</div>
 
 {% if workouts %}
-  <ul>
+  <ul class="workout-list">
     {% for w in workouts %}
-      <li class="thread">
-        <p><strong>{{ w.date }}:</strong> {{ w.type }} – {{ w.duration }} min</p>
+      <li class="workout-item">
 
-        {% if w.categories and w.categories|length %}
-          <p>
+        <div class="workout-header">
+          <strong>{{ w.date }}</strong>  {{ w.type }}  {{ w.duration }} min
+        </div>
+
+        {% if w.categories %}
+          <div class="workout-categories">
             {% for c in w.categories %}
               <span class="badge {{ c.name|lower }}">{{ c.name }}</span>
             {% endfor %}
-          </p>
+          </div>
         {% endif %}
 
         {% if w.description %}
-          <div style="white-space: pre-wrap;">
+          <div class="workout-description">
             {{ w.description }}
           </div>
-
         {% endif %}
 
       </li>

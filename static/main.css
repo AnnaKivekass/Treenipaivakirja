@@ -2,8 +2,9 @@ body {
   background-color: #c8e4ee;
   color: #111;
   font-family: sans-serif;
-  margin: auto;
+  margin: 0 auto;
   max-width: 50em;
+  padding: 0 1rem;
 }
 
 .header {
@@ -11,7 +12,9 @@ body {
   color: #ff5a5f;
   padding: 1em;
   margin: 0.5em 0;
+  border-radius: 8px;
 }
+
 
 .nav {
   background: #e6eef2;
@@ -25,6 +28,7 @@ body {
 nav ul {
   padding: 0;
   margin: 0;
+  list-style: none;
 }
 
 nav li {
@@ -51,24 +55,28 @@ nav a:hover {
   border: 1px solid #e6eef2;
   border-radius: 10px;
   box-shadow: 0 6px 24px rgba(0,0,0,.05);
-  padding: 1em;
-  margin: 0.5em 0;
+  padding: 1.2em;
+  margin: 0.5em 0 1.5em 0;
 }
 
 input[type="text"],
 input[type="password"],
 input[type="date"],
 input[type="number"],
-select, textarea {
+select,
+textarea {
   width: min(560px, 100%);
   background: #f7fbfd;
   border: 1px solid #cfe0e7;
   border-radius: 8px;
   padding: 9px 10px;
   color: #111;
+  margin-bottom: 0.5rem;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: #8ecae6;
   box-shadow: 0 0 0 3px rgba(142,202,230,.35);
@@ -76,32 +84,35 @@ input:focus, select:focus, textarea:focus {
 }
 
 label.inline {
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  margin:6px 12px 6px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 12px 6px 0;
 }
 
-button, .btn {
+button,
+.btn {
   background: linear-gradient(#f8fafc, #eef4f8);
   border: 1px solid #cfe0e7;
   color: #111;
   padding: 8px 14px;
   border-radius: 10px;
   cursor: pointer;
+  transition: 0.2s ease;
 }
 
-button:hover, .btn:hover {
+button:hover,
+.btn:hover {
   background: linear-gradient(#eef6fb, #e8f2f8);
   border-color: #8ecae6;
 }
 
 .info {
   background: #e3f2fd;
-  color: #111;
   border: 1px solid #cfe0e7;
-  padding: 0.5em;
+  padding: 0.7em;
   margin: 1em 0;
+  border-radius: 6px;
 }
 
 .badge {
@@ -110,9 +121,8 @@ button:hover, .btn:hover {
   padding: .25em .8em;
   margin: 0 .25em .25em 0;
   border-radius: .6em;
-  color: #000;
   font-weight: 600;
-  font-size: .9em;
+  font-size: .85em;
 }
 
 .badge.juoksu    { background: #ffe5b4; }
@@ -122,29 +132,69 @@ button:hover, .btn:hover {
 .badge.jooga     { background: #f9d5ec; }
 .badge.kävely    { background: #ede7f6; }
 
-a, a:visited { color: #1f2937; }
-a:hover { color: #0f172a; }
 
+a, a:visited {
+  color: #1f2937;
+}
+
+a:hover {
+  color: #647aad;
+}
 
 .flash-messages {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .flash {
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    font-weight: 500;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .flash.error {
-    background-color: #ffe5e5;
-    color: #b30000;
-    border: 1px solid #ffb3b3;
+  background-color: #ffe5e5;
+  color: #b30000;
+  border: 1px solid #ffb3b3;
 }
 
 .flash.success {
-    background-color: #e6ffed;
-    color: #006622;
-    border: 1px solid #b3ffcc;
+  background-color: #e6ffed;
+  color: #006622;
+  border: 1px solid #b3ffcc;
+}
+
+.workout-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.workout-item {
+  margin-bottom: 1.2rem;
+  padding: 1rem;
+  background: #f9fcfe;
+  border: 1px solid #e1edf3;
+  border-radius: 10px;
+}
+
+.workout-header {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.workout-categories {
+  margin-bottom: 0.4rem;
+}
+
+.workout-description {
+  white-space: pre-wrap;
+  margin-top: 0.4rem;
+  color: #333;
+}
+
+.actions {
+  margin-bottom: 1rem;
+  line-height: 1.8;
 }

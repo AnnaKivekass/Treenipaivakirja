@@ -13,21 +13,29 @@
 {% endwith %}
 
 {% if workouts and workouts|length > 0 %}
-  <ul>
+  <ul class="workout-list">
     {% for w in workouts %}
-      <li style="margin-bottom:1rem;">
-        <strong>{{ w.get('date') }}</strong> – {{ w.get('type') }}
-        {% if w.get('duration') is not none %} ({{ w.get('duration') }} min){% endif %}
-        {% if w.get('username') %} · {{ w.get('username') }}{% endif %}
+      <li class="workout-item">
+
+        <div class="workout-header">
+          <strong>{{ w.get('date') }}</strong> – {{ w.get('type') }}
+          {% if w.get('duration') is not none %}
+            ({{ w.get('duration') }} min)
+          {% endif %}
+          {% if w.get('username') %}
+            · {{ w.get('username') }}
+          {% endif %}
+        </div>
+
         {% if w.get('description') %}
-          <div style="white-space: pre-wrap; margin-top:.25rem;">
+          <div class="workout-description">
             {{ w.get('description') }}
           </div>
         {% endif %}
+
       </li>
     {% endfor %}
   </ul>
 {% else %}
   <p>Ei treenejä.</p>
 {% endif %}
-{% endblock %}
