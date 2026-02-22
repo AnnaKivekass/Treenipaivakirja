@@ -47,6 +47,7 @@ app.config["DATABASE"] = "instance/app.sqlite3"
 
 Path("instance").mkdir(exist_ok=True)
 
+
 @app.before_request
 def ensure_csrf():
     if "csrf_token" not in session:
@@ -189,6 +190,36 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/profile")
+@login_required
+def profile():
+    user = get_user_by_id(session["user_id"])
+    stats = get_user_stats(session["user_id"])
+    stats_by_type = get_user_stats_by_type(session["user_id"])
+    workouts = list_workouts(session["user_id"])
+
+    return render_template(
+        "user.html",
+        user=user,
+        stats=stats,
+        stats_by_type=stats_by_type,
+        workouts=workouts,
+    )
+
+
+@app.route("/messages")
+@login_required
+def messages_route():
+    workouts = list_workouts_for_messages()
+    messages = list_messages_full()
+
+    return render_template(
+        "messages.html",
+        workouts=workouts,
+        messages=messages,
+    )
+
+
 @app.route("/workout/add", methods=["GET", "POST"], endpoint="add_workout")
 @login_required
 def add_workout_route():
@@ -235,6 +266,135 @@ def add_workout_route():
     )
 
 
+@app.route("/workout/<int:workout_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_workout(workout_id):
+    workout = get_workout(workout_id)
+
+    if not workout or workout["user_id"] != session["user_id"]:
+        abort(403)
+
+    if request.method == "POST":
+        validate_csrf()
+
+        selected_ids = [
+            int(x) for x in request.form.getlist("categories")
+            if x.isdigit()
+        ]
+
+        data, errors = validate_workout_form(request.form)
+
+        if errors:
+            for e in errors:
+                flash(e, "error")
+            return render_template(
+                "workout_form.html",
+                form=data,
+                categories=list_categories(),
+                selected=set(selected_ids),
+            )
+
+        update_workout(
+            workout_id,
+            session["user_id"],
+            data["date"],
+            data["type"],
+            data["duration_val"],
+            data["description"] or None,
+        )
+
+        assign_categories_to_workout(workout_id, selected_ids)
+
+        flash("Treeni päivitetty.", "success")
+        return redirect(url_for("profile"))
+
+    return render_template(
+        "workout_form.html",
+        form={
+            "date": workout["date"],
+            "type": workout["type"],
+            "duration": workout["duration"],
+            "description": workout["description"] or "",
+        },
+        categories=list_categories(),
+        selected={
+            c["id"] for c in list_workout_categories(workout_id)
+        },
+    )
+
+@app.route("/message/add", methods=["POST"])
+@login_required
+def add_message_route():
+    validate_csrf()
+
+    workout_id = request.form.get("workout_id")
+    content = (request.form.get("content") or "").strip()
+
+    if not workout_id or not workout_id.isdigit() or not content:
+        abort(400)
+
+    owner_row = get_workout_owner(int(workout_id))
+    if not owner_row:
+        abort(400)
+
+    receiver_id = owner_row["user_id"]
+
+    add_message(
+        session["user_id"],
+        receiver_id,
+        int(workout_id),
+        content
+    )
+
+    flash("Viesti lisätty.", "success")
+    return redirect(url_for("messages_route"))
+
+
+@app.route("/message/<int:message_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_message_route(message_id):
+    message = get_message(message_id)
+
+    if not message or message["sender_id"] != session["user_id"]:
+        abort(403)
+
+    if request.method == "POST":
+        validate_csrf()
+        content = (request.form.get("content") or "").strip()
+
+        if not content:
+            abort(400)
+
+        update_message(message_id, content)
+        flash("Viesti päivitetty.", "success")
+        return redirect(url_for("messages_route"))
+
+    return render_template("edit_message.html", message=message)
+
+@app.route("/message/<int:message_id>/delete", methods=["POST"])
+@login_required
+def delete_message_route(message_id):
+    validate_csrf()
+
+    delete_message_by_id(message_id)
+    flash("Viesti poistettu.", "success")
+    return redirect(url_for("messages_route"))
+
+
+@app.route("/workout/<int:workout_id>/delete", methods=["POST"])
+@login_required
+def delete_workout(workout_id):
+    validate_csrf()
+
+    success = delete_workout_by_id(workout_id, session["user_id"])
+
+    if not success:
+        abort(403)
+
+    flash("Treeni poistettu.", "success")
+    return redirect(url_for("profile"))
+
+
 @app.route("/workouts")
 @login_required
 def workouts_all():
@@ -253,6 +413,30 @@ def workouts_all():
     ]
 
     return render_template("workouts_all.html", workouts=items)
+
+@app.route("/search")
+@login_required
+def search():
+    query = (request.args.get("query") or "").strip()
+    results = []
+
+    if query:
+        rows = search_workouts(query)
+        results = [
+            {
+                "id": r["id"],
+                "date": r["date"],
+                "type": r["type"],
+                "duration": r["duration"],
+                "description": r["description"],
+                "username": r["username"],
+            }
+            for r in rows
+        ]
+
+    return render_template("search.html", results=results, query=query)
+
+
 
 @app.errorhandler(400)
 @app.errorhandler(403)

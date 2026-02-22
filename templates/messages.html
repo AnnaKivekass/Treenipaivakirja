@@ -8,7 +8,7 @@
 </p>
 
 <h2>Lähetä uusi viesti</h2>
-<form method="post">
+<form method="post" action="{{ url_for('add_message_route') }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <p>
     <label for="content">Sisältö:</label><br>
@@ -37,11 +37,11 @@
       </div>
 
       {% if session.user_id and session.username and m.sender == session.username %}
-        <form action="{{ url_for('delete_message', message_id=m.id) }}" method="post" style="display:inline">
+        <form action="{{ url_for('delete_message_route', message_id=m.id) }}" method="post" style="display:inline">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <button type="submit" onclick="return confirm('Poistetaanko viesti?')">Poista</button>
         </form>
-        <a href="{{ url_for('edit_message', message_id=m.id) }}">Muokkaa</a>
+        <a href="{{ url_for('edit_message_route', message_id=m.id) }}">Muokkaa</a>
       {% endif %}
     </li>
   {% else %}

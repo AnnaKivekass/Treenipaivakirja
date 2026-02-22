@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 from .connection import get_db
 
-
 def list_all_workouts():
     db = get_db()
     return db.execute(
@@ -11,7 +10,6 @@ def list_all_workouts():
            JOIN users u ON u.id = w.user_id
            ORDER BY w.date DESC, w.id DESC"""
     ).fetchall()
-
 
 def add_workout(user_id: int, date: str, wtype: str, duration: int, description: Optional[str]) -> int:
     db = get_db()
@@ -24,7 +22,6 @@ def add_workout(user_id: int, date: str, wtype: str, duration: int, description:
     )
     db.commit()
     return int(cur.lastrowid)
-
 
 def list_workouts(user_id: int) -> List[Dict]:
     db = get_db()
@@ -59,7 +56,6 @@ def list_workouts(user_id: int) -> List[Dict]:
         )
     return result
 
-
 def get_workout(workout_id: int) -> Optional[dict]:
     db = get_db()
     row = db.execute(
@@ -72,25 +68,30 @@ def get_workout(workout_id: int) -> Optional[dict]:
     ).fetchone()
     return dict(row) if row else None
 
-def search_workouts(user_id: int, query: str):
+def search_workouts(query: str):
     db = get_db()
     return db.execute(
         """
-        SELECT DISTINCT w.id, w.date, w.type, w.duration, w.description
+        SELECT DISTINCT
+            w.id,
+            w.date,
+            w.type,
+            w.duration,
+            w.description,
+            u.username
         FROM workouts w
+        JOIN users u ON u.id = w.user_id
         LEFT JOIN workout_categories wc ON wc.workout_id = w.id
         LEFT JOIN categories c ON c.id = wc.category_id
-        WHERE w.user_id = ?
-          AND (
+        WHERE (
                 w.type LIKE ?
                 OR w.description LIKE ?
                 OR w.date LIKE ?
                 OR c.name LIKE ?
-          )
+        )
         ORDER BY w.date DESC, w.id DESC
         """,
         (
-            user_id,
             f"%{query}%",
             f"%{query}%",
             f"%{query}%",
