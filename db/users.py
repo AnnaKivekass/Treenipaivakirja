@@ -47,13 +47,32 @@ def get_user_by_id(user_id: int) -> Optional[dict]:
     ).fetchone()
     return dict(row) if row else None
 
+def get_user_with_workouts(user_id):
+    db = get_db()
+
+    user = db.execute("""
+        SELECT id, username
+        FROM users
+        WHERE id = ?
+    """, (user_id,)).fetchone()
+
+    workouts = db.execute("""
+        SELECT id, date, type, duration
+        FROM workouts
+        WHERE user_id = ?
+        ORDER BY date DESC
+    """, (user_id,)).fetchall()
+
+    return user, workouts
 
 def verify_password(user_row: Optional[dict], password: str) -> bool:
     return bool(user_row) and user_row["password_hash"] == _hash_password(password)
 
-def get_user_by_id(user_id: int):
+def list_workouts_by_user(user_id):
     db = get_db()
-    return db.execute(
-        "SELECT id, username FROM users WHERE id = ?",
-        (user_id,),
-    ).fetchone()
+    return db.execute("""
+        SELECT id, date, type, duration
+        FROM workouts
+        WHERE user_id = ?
+        ORDER BY date DESC
+    """, (user_id,)).fetchall()

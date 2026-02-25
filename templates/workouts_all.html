@@ -23,7 +23,10 @@
             ({{ w.get('duration') }} min)
           {% endif %}
           {% if w.get('username') %}
-            · {{ w.get('username') }}
+            · 
+            <a href="{{ url_for('user_profile', user_id=w.get('user_id')) }}">
+              {{ w.get('username') }}
+            </a>
           {% endif %}
         </div>
 

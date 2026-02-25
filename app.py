@@ -34,6 +34,7 @@ from db.workouts import (
     get_workout,
     list_workouts,
     list_all_workouts,
+    list_workouts_by_user,
     search_workouts,
     update_workout,
     delete_workout_by_id,
@@ -322,6 +323,21 @@ def edit_workout(workout_id):
         },
     )
 
+@app.route("/users/<int:user_id>")
+def user_profile(user_id):
+    user = get_user_by_id(user_id)
+
+    if not user:
+        abort(404)
+
+    workouts = list_workouts_by_user(user_id)
+
+    return render_template(
+        "user_profile.html",
+        user=user,
+        workouts=workouts
+    )
+
 @app.route("/message/add", methods=["POST"])
 @login_required
 def add_message_route():
@@ -401,17 +417,17 @@ def workouts_all():
     rows = list_all_workouts()
 
     items = [
-        {
-            "id": r["id"],
-            "date": r["date"],
-            "type": r["type"],
-            "duration": r["duration"],
-            "description": r["description"],
-            "username": r["username"],
-        }
-        for r in rows
-    ]
-
+    {
+        "id": r["id"],
+        "date": r["date"],
+        "type": r["type"],
+        "duration": r["duration"],
+        "description": r["description"],
+        "username": r["username"],
+        "user_id": r["user_id"],
+    }
+    for r in rows
+]
     return render_template("workouts_all.html", workouts=items)
 
 @app.route("/search")

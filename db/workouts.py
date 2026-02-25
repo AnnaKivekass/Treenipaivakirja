@@ -5,7 +5,13 @@ from .connection import get_db
 def list_all_workouts():
     db = get_db()
     return db.execute(
-        """SELECT w.id, w.date, w.type, w.duration, w.description, u.username
+        """SELECT w.id,
+                  w.date,
+                  w.type,
+                  w.duration,
+                  w.description,
+                  w.user_id,        -- 👈 LISÄTTY
+                  u.username
            FROM workouts w
            JOIN users u ON u.id = w.user_id
            ORDER BY w.date DESC, w.id DESC"""
@@ -154,3 +160,22 @@ def get_user_stats_by_type(user_id: int):
         {"type": r[0], "count": r[1], "minutes": r[2]}
         for r in rows
     ]
+
+def list_workouts_by_user(user_id: int):
+    db = get_db()
+    return db.execute(
+        """
+        SELECT
+            w.id,
+            w.date,
+            w.type,
+            w.duration,
+            w.description,
+            u.username
+        FROM workouts w
+        JOIN users u ON u.id = w.user_id
+        WHERE w.user_id = ?
+        ORDER BY w.date DESC, w.id DESC
+        """,
+        (user_id,),
+    ).fetchall()
