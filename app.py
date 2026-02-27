@@ -46,6 +46,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret"
 app.config["DATABASE"] = "instance/app.sqlite3"
 
+
 Path("instance").mkdir(exist_ok=True)
 
 
@@ -323,6 +324,7 @@ def edit_workout(workout_id):
         },
     )
 
+
 @app.route("/users/<int:user_id>")
 def user_profile(user_id):
     user = get_user_by_id(user_id)
@@ -337,6 +339,7 @@ def user_profile(user_id):
         user=user,
         workouts=workouts
     )
+
 
 @app.route("/message/add", methods=["POST"])
 @login_required
@@ -387,6 +390,7 @@ def edit_message_route(message_id):
 
     return render_template("edit_message.html", message=message)
 
+
 @app.route("/message/<int:message_id>/delete", methods=["POST"])
 @login_required
 def delete_message_route(message_id):
@@ -430,6 +434,7 @@ def workouts_all():
 ]
     return render_template("workouts_all.html", workouts=items)
 
+
 @app.route("/search")
 @login_required
 def search():
@@ -451,7 +456,6 @@ def search():
         ]
 
     return render_template("search.html", results=results, query=query)
-
 
 
 @app.errorhandler(400)

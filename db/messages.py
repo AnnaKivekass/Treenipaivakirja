@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Dict, List, Optional
 from .connection import get_db
 
+
 def add_message(sender_id: int, receiver_id: int, workout_id: int, content: str) -> None:
     db = get_db()
     db.execute(
@@ -12,6 +13,7 @@ def add_message(sender_id: int, receiver_id: int, workout_id: int, content: str)
         (sender_id, receiver_id, workout_id, content),
     )
     db.commit()
+
 
 def get_message(message_id: int):
     db = get_db()
@@ -25,6 +27,7 @@ def delete_message_by_id(message_id: int):
     db = get_db()
     db.execute("DELETE FROM messages WHERE id = ?", (message_id,))
     db.commit()
+
 
 def list_messages(receiver_id: int) -> List[Dict]:
     db = get_db()
@@ -67,6 +70,7 @@ def list_messages(receiver_id: int) -> List[Dict]:
         )
     return result
 
+
 def update_message(message_id: int, content: str) -> None:
     db = get_db()
     db.execute(
@@ -79,6 +83,7 @@ def update_message(message_id: int, content: str) -> None:
     )
     db.commit()
 
+
 def list_workouts_for_messages():
     db = get_db()
     return db.execute(
@@ -87,6 +92,7 @@ def list_workouts_for_messages():
            JOIN users u ON u.id = w.user_id
            ORDER BY w.date DESC, w.id DESC"""
     ).fetchall()
+
 
 def list_messages_full():
     db = get_db()
@@ -125,6 +131,7 @@ def list_messages_full():
         )
 
     return result
+
 
 def get_workout_owner(workout_id: int):
     db = get_db()

@@ -18,7 +18,7 @@
       <li class="workout-item">
 
         <div class="workout-header">
-          <strong>{{ w.get('date') }}</strong> – {{ w.get('type') }}
+          <strong>{{ w.get('date') }}</strong>   {{ w.get('type') }}
           {% if w.get('duration') is not none %}
             ({{ w.get('duration') }} min)
           {% endif %}

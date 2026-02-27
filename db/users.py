@@ -1,8 +1,6 @@
 from __future__ import annotations
-
 import hashlib
 from typing import Optional
-
 from .connection import get_db
 
 
@@ -47,6 +45,7 @@ def get_user_by_id(user_id: int) -> Optional[dict]:
     ).fetchone()
     return dict(row) if row else None
 
+
 def get_user_with_workouts(user_id):
     db = get_db()
 
@@ -65,8 +64,10 @@ def get_user_with_workouts(user_id):
 
     return user, workouts
 
+
 def verify_password(user_row: Optional[dict], password: str) -> bool:
     return bool(user_row) and user_row["password_hash"] == _hash_password(password)
+
 
 def list_workouts_by_user(user_id):
     db = get_db()

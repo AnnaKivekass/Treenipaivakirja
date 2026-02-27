@@ -15,7 +15,6 @@ body {
   border-radius: 8px;
 }
 
-
 .nav {
   background: #e6eef2;
   border: 1px solid #d7e5ec;
@@ -131,7 +130,6 @@ button:hover,
 .badge.kuntosali { background: #d6f5d6; }
 .badge.jooga     { background: #f9d5ec; }
 .badge.kävely    { background: #ede7f6; }
-
 
 a, a:visited {
   color: #1f2937;
